@@ -1,0 +1,7 @@
+#Directory
+.vscode/
+bin/
+obj/
+pdfs/
+
+*.mp4
