@@ -3,7 +3,10 @@ This is the implementation of *Visual Simulation of Smoke* by Ronald Fedkiw, Jos
 
 ## Build
 **this project is still under development so you cannot build.**
+
 **Windows is not supported.**
+
+Library you need is Eigen 3.3.4
 
 You can build and execute following command.
 

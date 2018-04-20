@@ -1,10 +1,31 @@
 #include <cmath>
-#include <Eigen/Core>
 
 #include "Simulator.hpp"
 
-Simulator::Simulator(Voxels *voxels) : m_voxels(voxels)
+Simulator::Simulator(Voxels *voxels) : m_voxels(voxels), A(SIZE, SIZE), b(SIZE), x(SIZE)
 {
+    // set wall
+    for (int k = 0; k < N; ++k)
+    {
+        for (int j = 0; j < N; ++j)
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                if (k == 0 || k == N)
+                {
+                    m_voxels->is_fluid[POS(i, j, k)] = false;
+                }
+                else if (i == 0 || i == N || j == 0 || j == N)
+                {
+                    m_voxels->is_fluid[POS(i, j, k)] = false;
+                }
+                else
+                {
+                    m_voxels->is_fluid[POS(i, j, k)] = true;
+                }
+            }
+        }
+    }
 }
 
 Simulator::~Simulator()
@@ -13,18 +34,30 @@ Simulator::~Simulator()
 
 void Simulator::update()
 {
+    addSource();
+
     resetForce();
     calVorticity();
     addForce();
     advectVelocity();
-    calPressure();
-    calPressureGradient();
-    applyPressureTerm();
+    //calPressure();
+    //applyPressureTerm();
 
     advectScalar();
 }
 
 /* private */
+void Simulator::addSource()
+{
+    for (int k = N / 2 - SOURCE_SIZE / 2; k < N / 2 + SOURCE_SIZE / 2; ++k)
+    {
+        for (int i = N / 2 - SOURCE_SIZE / 2; i < N / 2 + SOURCE_SIZE / 2; ++i)
+        {
+            m_voxels->dens[POS(i, SOURCE_MARGIN, k)] = 1.0;
+        }
+    }
+}
+
 void Simulator::resetForce()
 {
     for (int k = 0; k < N; ++k)
@@ -177,14 +210,78 @@ void Simulator::advectVelocity()
 
 void Simulator::calPressure()
 {
-}
+    A.setZero();
+    // nnz size is estimated by 7*SIZE because there are 7 nnz elements in a row.(center and neighbor 6)
+    A.reserve(7 * SIZE);
+    b.setZero();
 
-void Simulator::calPressureGradient()
-{
+    double coeff = LENGTH * RHO / (N * DT);
+
+    for (int k = 0; k < N; ++k)
+    {
+        for (int j = 0; j < N; ++j)
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                double F[6] = {k > 0, j > 0, i > 0, i < N - 1, j < N - 1, k < N - 1};
+                double D[6] = {-1.0, -1.0, -1.0, 1.0, 1.0, 1.0};
+                double U[6] = {m_voxels->w[POSW(i, j, k - 1)], m_voxels->v[POSV(i, j - 1, k)], m_voxels->u[POSU(i - 1, j, k)],
+                               m_voxels->u[POSU(i + 1, j, k)], m_voxels->v[POSV(i, j + 1, k)], m_voxels->w[POSW(i, j, k + 1)]};
+                double sum_F = 0.0;
+
+                for (int n = 0; n < 5; ++n)
+                {
+                    sum_F += F[n];
+                    b(POS(i, j, k)) += D[n] * F[n] * U[n];
+                }
+                b *= coeff;
+
+                // notation is (row, col)
+                A.startVec(POS(i, j, k));
+                A.insertBack(POS(i, j, k), POS(i, j, k - 1)) = F[0];
+                A.insertBack(POS(i, j, k), POS(i, j - 1, k)) = F[1];
+                A.insertBack(POS(i, j, k), POS(i - 1, j, k)) = F[2];
+                A.insertBack(POS(i, j, k), POS(i, j, k)) = -sum_F;
+                A.insertBack(POS(i, j, k), POS(i + 1, j, k)) = F[3];
+                A.insertBack(POS(i, j, k), POS(i, j + 1, k)) = F[4];
+                A.insertBack(POS(i, j, k), POS(i, j, k + 1)) = F[5];
+            }
+        }
+    }
+
+    A.finalize();
+
+    /* solve sparse lenear system by ICCG */
+    ICCG.compute(A);
+    x = ICCG.solve(b);
+    std::cout << "#iterations:     " << ICCG.iterations() << std::endl;
+    std::cout << "estimated error: " << ICCG.error() << std::endl;
+    Eigen::Map<Eigen::VectorXd>(m_voxels->pressure, SIZE) = x;
 }
 
 void Simulator::applyPressureTerm()
 {
+    for (int k = 0; k < N; ++k)
+    {
+        for (int j = 0; j < N; ++j)
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                if (i < N - 1)
+                {
+                    m_voxels->u[POSU(i, j, k)] -= DT * (m_voxels->pressure[POS(i + 1, j, k)] - m_voxels->pressure[POS(i, j, k)]) * N / LENGTH;
+                }
+                if (j < N - 1)
+                {
+                    m_voxels->v[POSV(i, j, k)] -= DT * (m_voxels->pressure[POS(i, j + 1, k)] - m_voxels->pressure[POS(i, j, k)]) * N / LENGTH;
+                }
+                if (k < N - 1)
+                {
+                    m_voxels->w[POSW(i, j, k)] -= DT * (m_voxels->pressure[POS(i, j, k + 1)] - m_voxels->pressure[POS(i, j, k)]) * N / LENGTH;
+                }
+            }
+        }
+    }
 }
 
 void Simulator::advectScalar()

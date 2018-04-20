@@ -16,7 +16,7 @@ public:
   double omg_x[SIZE], omg_y[SIZE], omg_z[SIZE], omg_length[SIZE];
   double eta_x[SIZE], eta_y[SIZE], eta_z[SIZE];
 
-  double dens[SIZE], temp[SIZE];
+  double dens[SIZE], temp[SIZE], pressure[SIZE];
   double fx[SIZE], fy[SIZE], fz[SIZE];
-  ETag tag[SIZE];
+  bool is_fluid[SIZE];
 };

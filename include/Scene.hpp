@@ -1,15 +1,17 @@
 #pragma once
+#include "Voxels.hpp"
 
 class Scene
 {
-  public:
-    Scene();
-    ~Scene();
+public:
+  Scene(Voxels *voxels);
+  ~Scene();
 
-    void writeData();
+  void writeData();
 
-  private:
-    void writeData_inVtuFormat();
+private:
+  void writeData_inVtiFormat();
 
-    int m_file_num;
+  int m_file_num;
+  Voxels *m_voxels;
 };

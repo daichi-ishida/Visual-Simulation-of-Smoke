@@ -3,5 +3,6 @@
 bin/
 obj/
 pdfs/
+output/
 
 *.mp4

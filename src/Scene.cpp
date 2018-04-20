@@ -7,7 +7,7 @@
 #include "constants.hpp"
 #include "Scene.hpp"
 
-Scene::Scene() : m_file_num(0)
+Scene::Scene(Voxels *voxels) : m_file_num(0), m_voxels(voxels)
 {
 }
 
@@ -17,110 +17,109 @@ Scene::~Scene()
 
 void Scene::writeData()
 {
+    writeData_inVtiFormat();
+    ++m_file_num;
 }
 
 /* private */
 
-void Scene::writeData_inVtuFormat()
+void Scene::writeData_inVtiFormat()
 {
     std::ostringstream sout;
     sout << std::setfill('0') << std::setw(3) << std::right << m_file_num;
 
-    std::string file_name = "output/particle_" + sout.str() + ".vtu";
+    std::string file_name = "output/grids" + sout.str() + ".vti";
     std::ofstream ofs;
     ofs.open(file_name);
     if (!ofs)
     {
-        std::cout << "ERROR : file open error at writing data in .vtu format\n"
+        std::cout << "ERROR : file open error at writing data in .vti format\n"
                   << file_name << " cannot open" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     /* header */
     ofs << "<?xml version='1.0' encoding='UTF-8'?>" << std::endl;
-    ofs << "<VTKFile xmlns='VTK' byte_order='LittleEndian' version='0.1' type='UnstructuredGrid'>" << std::endl;
-    ofs << "<UnstructuredGrid>" << std::endl;
+    ofs << "<VTKFile xmlns='VTK' byte_order='LittleEndian' version='0.1' type='ImageData'>" << std::endl;
+    ofs << "<ImageData WholeExtent='0 " << N - 1 << " 0 " << N - 1 << " 0 " << N - 1 << "' Origin='0 0 0' Spacing='1.0 1.0 1.0'>>" << std::endl;
 
-    ofs << "<Piece NumberOfCells='" << m_particle_set.getNumberOfParticles() << "' NumberOfPoints='" << m_particle_set.getNumberOfParticles() << "'>" << std::endl;
+    ofs << "<Piece Extent='0 " << N - 1 << " 0 " << N - 1 << " 0 " << N - 1 << "'>" << std::endl;
 
-    /* point position */
-    ofs << "<Points>" << std::endl;
-    ofs << "<DataArray NumberOfComponents='3' type='Float32' Name='Position' format='ascii'>" << std::endl;
-    for (unsigned int i = 0, n = m_particle_set.getNumberOfParticles(); i < n; ++i)
+    ofs << "<CellData Vectors='velocity' Scalars='density' Scalars='temperature' Scalars='pressure' Scalars='omega'>" << std::endl;
+
+    ofs << "<DataArray type='Float32' Name='velocity' NumberOfComponents='3' format='ascii'>" << std::endl;
+    for (int k = 0; k < N; ++k)
     {
-        ofs << m_particle_set.positions[i].x() << " "
-            << m_particle_set.positions[i].y() << " "
-            << m_particle_set.positions[i].z() << std::endl;
-    }
-    ofs << "</DataArray>" << std::endl;
-    ofs << "</Points>" << std::endl;
-
-    /* point data */
-    ofs << "<PointData>" << std::endl;
-
-    // type
-    ofs << "<DataArray NumberOfComponents='1' type='Int32' Name='ParticleType' format='ascii'>" << std::endl;
-    for (unsigned int i = 0, n = m_particle_set.getNumberOfParticles(); i < n; ++i)
-    {
-        ofs << m_particle_set.types[i] << std::endl;
+        for (int j = 0; j < N; ++j)
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                ofs << m_voxels->avg_u[POS(i, j, k)] << " " << m_voxels->avg_v[POS(i, j, k)] << " " << m_voxels->avg_w[POS(i, j, k)] << std::endl;
+            }
+        }
     }
     ofs << "</DataArray>" << std::endl;
 
-    // velocity ( speed )
-    ofs << "<DataArray NumberOfComponents='1' type='Float32' Name='Velocity' format='ascii'>" << std::endl;
-    for (unsigned int i = 0, n = m_particle_set.getNumberOfParticles(); i < n; ++i)
+    ofs << "<DataArray type='Float32' Name='density' NumberOfComponents='1' format='ascii'>" << std::endl;
+    for (int k = 0; k < N; ++k)
     {
-        double speed = m_particle_set.velocities[i].norm();
-        ofs << speed << std::endl;
+        for (int j = 0; j < N; ++j)
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                ofs << m_voxels->dens[POS(i, j, k)] << " ";
+            }
+            ofs << std::endl;
+        }
     }
     ofs << "</DataArray>" << std::endl;
 
-    // pressures[i]
-    ofs << "<DataArray NumberOfComponents='1' type='Float32' Name='Pressure' format='ascii'>" << std::endl;
-    for (unsigned int i = 0, n = m_particle_set.getNumberOfParticles(); i < n; ++i)
+    ofs << "<DataArray type='Float32' Name='temperature' NumberOfComponents='1' format='ascii'>" << std::endl;
+    for (int k = 0; k < N; ++k)
     {
-        ofs << m_particle_set.pressures[i] << std::endl;
+        for (int j = 0; j < N; ++j)
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                ofs << m_voxels->temp[POS(i, j, k)] << " ";
+            }
+            ofs << std::endl;
+        }
     }
     ofs << "</DataArray>" << std::endl;
 
-    // pressures[i] gradient
-    ofs << "<DataArray NumberOfComponents='1' type='Float32' Name='Pressure Gradient' format='ascii'>" << std::endl;
-    for (unsigned int i = 0, n = m_particle_set.getNumberOfParticles(); i < n; ++i)
+    ofs << "<DataArray type='Float32' Name='pressure' NumberOfComponents='1' format='ascii'>" << std::endl;
+    for (int k = 0; k < N; ++k)
     {
-        double grad_magnitude = m_particle_set.pressure_gradients[i].norm();
-        ofs << grad_magnitude << std::endl;
+        for (int j = 0; j < N; ++j)
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                ofs << m_voxels->pressure[POS(i, j, k)] << " ";
+            }
+            ofs << std::endl;
+        }
     }
     ofs << "</DataArray>" << std::endl;
 
-    ofs << "</PointData>" << std::endl;
-
-    ofs << "<Cells>" << std::endl;
-    ofs << "<DataArray type='Int32' Name='connectivity' format='ascii'>" << std::endl;
-
-    for (unsigned int i = 0, n = m_particle_set.getNumberOfParticles(); i < n; ++i)
+    ofs << "<DataArray type='Float32' Name='omega' NumberOfComponents='1' format='ascii'>" << std::endl;
+    for (int k = 0; k < N; ++k)
     {
-        ofs << i << std::endl;
+        for (int j = 0; j < N; ++j)
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                ofs << m_voxels->omg_length[POS(i, j, k)] << " ";
+            }
+            ofs << std::endl;
+        }
     }
     ofs << "</DataArray>" << std::endl;
-    ofs << "<DataArray type='Int32' Name='offsets' format='ascii'>" << std::endl;
 
-    for (unsigned int i = 0, n = m_particle_set.getNumberOfParticles(); i < n; ++i)
-    {
-        ofs << i + 1 << std::endl;
-    }
-    ofs << "</DataArray>" << std::endl;
-    ofs << "<DataArray type='UInt8' Name='types' format='ascii'>" << std::endl;
-
-    for (unsigned int i = 0, n = m_particle_set.getNumberOfParticles(); i < n; ++i)
-    {
-        ofs << 1 << std::endl;
-    }
-    ofs << "</DataArray>" << std::endl;
-    ofs << "</Cells>" << std::endl;
-
+    ofs << "</CellData>" << std::endl;
     ofs << "</Piece>" << std::endl;
 
-    ofs << "</UnstructuredGrid>" << std::endl;
+    ofs << "</ImageData>" << std::endl;
     ofs << "</VTKFile>" << std::endl;
 
     ofs.close();
