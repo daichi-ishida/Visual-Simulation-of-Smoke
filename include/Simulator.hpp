@@ -1,13 +1,11 @@
 #pragma once
-#include <fftw3.h>
-
-#define GLFW_INCLUDE_GLU
-#include <GLFW/glfw3.h>
-#pragma once
+#include <vector>
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
 #include "Voxels.hpp"
+
+typedef Eigen::Triplet<double> T;
 
 class Simulator
 {
@@ -34,7 +32,10 @@ private:
   Voxels *m_voxels;
 
   // solver
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower | Eigen::Upper, Eigen::IncompleteCholesky<double>> ICCG;
+  std::vector<T> tripletList;
+  // Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower | Eigen::Upper, Eigen::IncompleteCholesky<double>> ICCG;
+  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower | Eigen::Upper> ICCG;
+
   Eigen::SparseMatrix<double, Eigen::RowMajor> A;
   Eigen::VectorXd b;
   Eigen::VectorXd x;

@@ -1,9 +1,11 @@
 #include <cmath>
-
 #include "Simulator.hpp"
 
 Simulator::Simulator(Voxels *voxels) : m_voxels(voxels), A(SIZE, SIZE), b(SIZE), x(SIZE)
 {
+    // nnz size is estimated by 7*SIZE because there are 7 nnz elements in a row.(center and neighbor 6)
+    tripletList.reserve(7 * SIZE);
+    ICCG.setTolerance(1.0e-12);
     // set wall
     for (int k = 0; k < N; ++k)
     {
@@ -40,8 +42,8 @@ void Simulator::update()
     calVorticity();
     addForce();
     advectVelocity();
-    //calPressure();
-    //applyPressureTerm();
+    calPressure();
+    applyPressureTerm();
 
     advectScalar();
 }
@@ -148,6 +150,10 @@ void Simulator::addForce()
                 m_voxels->u[POSU(i + 1, j, k)] += DT * (m_voxels->fx[POS(i, j, k)] + m_voxels->fx[POS(i + 1, j, k)]) * 0.5;
                 m_voxels->v[POSV(i, j + 1, k)] += DT * (m_voxels->fy[POS(i, j, k)] + m_voxels->fy[POS(i, j + 1, k)]) * 0.5;
                 m_voxels->w[POSW(i, j, k + 1)] += DT * (m_voxels->fz[POS(i, j, k)] + m_voxels->fz[POS(i, j, k + 1)]) * 0.5;
+
+                m_voxels->u0[POSU(i + 1, j, k)] = m_voxels->u[POSU(i + 1, j, k)];
+                m_voxels->v0[POSV(i, j + 1, k)] = m_voxels->v[POSV(i, j + 1, k)];
+                m_voxels->w0[POSW(i, j, k + 1)] = m_voxels->w[POSW(i, j, k + 1)];
             }
         }
     }
@@ -213,18 +219,18 @@ void Simulator::advectVelocity()
 
 void Simulator::calPressure()
 {
+    tripletList.clear();
     A.setZero();
-    // nnz size is estimated by 7*SIZE because there are 7 nnz elements in a row.(center and neighbor 6)
-    A.reserve(7 * SIZE);
     b.setZero();
+    x.setZero();
 
-    double coeff = LENGTH * RHO / ((double)N * DT);
+    double coeff = -LENGTH * RHO / ((double)N * DT);
 
-    for (int k = 0; k < N; ++k)
+    for (int k = 1; k < N - 1; ++k)
     {
-        for (int j = 0; j < N; ++j)
+        for (int j = 1; j < N - 1; ++j)
         {
-            for (int i = 0; i < N; ++i)
+            for (int i = 1; i < N - 1; ++i)
             {
                 double F[6] = {k > 0, j > 0, i > 0, i < N - 1, j < N - 1, k < N - 1};
                 double D[6] = {-1.0, -1.0, -1.0, 1.0, 1.0, 1.0};
@@ -232,34 +238,48 @@ void Simulator::calPressure()
                                m_voxels->u[POSU(i + 1, j, k)], m_voxels->v[POSV(i, j + 1, k)], m_voxels->w[POSW(i, j, k + 1)]};
                 double sum_F = 0.0;
 
-                for (int n = 0; n < 5; ++n)
+                for (int n = 0; n < 6; ++n)
                 {
                     sum_F += F[n];
                     b(POS(i, j, k)) += D[n] * F[n] * U[n];
                 }
                 b *= coeff;
 
-                // notation is (row, col)
-                A.startVec(POS(i, j, k));
-                A.insertBack(POS(i, j, k), POS(i, j, k - 1)) = F[0];
-                A.insertBack(POS(i, j, k), POS(i, j - 1, k)) = F[1];
-                A.insertBack(POS(i, j, k), POS(i - 1, j, k)) = F[2];
-                A.insertBack(POS(i, j, k), POS(i, j, k)) = -sum_F;
-                A.insertBack(POS(i, j, k), POS(i + 1, j, k)) = F[3];
-                A.insertBack(POS(i, j, k), POS(i, j + 1, k)) = F[4];
-                A.insertBack(POS(i, j, k), POS(i, j, k + 1)) = F[5];
+                tripletList.push_back(T(POS(i, j, k), POS(i, j, k - 1), -F[0]));
+                tripletList.push_back(T(POS(i, j, k), POS(i, j - 1, k), -F[1]));
+                tripletList.push_back(T(POS(i, j, k), POS(i - 1, j, k), -F[2]));
+                tripletList.push_back(T(POS(i, j, k), POS(i, j, k), sum_F));
+                tripletList.push_back(T(POS(i, j, k), POS(i + 1, j, k), -F[3]));
+                tripletList.push_back(T(POS(i, j, k), POS(i, j + 1, k), -F[4]));
+                tripletList.push_back(T(POS(i, j, k), POS(i, j, k + 1), -F[5]));
             }
         }
     }
 
-    A.finalize();
+    A.setFromTriplets(tripletList.begin(), tripletList.end());
 
     /* solve sparse lenear system by ICCG */
     ICCG.compute(A);
     x = ICCG.solve(b);
     std::cout << "#iterations:     " << ICCG.iterations() << std::endl;
     std::cout << "estimated error: " << ICCG.error() << std::endl;
+    if (ICCG.info() == Eigen::Success)
+    {
+        std::cout << "SUCCESS: Convergence" << std::endl;
+    }
+    else
+    {
+        std::cout << "FAILED: No Convergence" << std::endl;
+    }
     Eigen::Map<Eigen::VectorXd>(m_voxels->pressure, SIZE) = x;
+    for (int i = 0; i < SIZE; ++i)
+    {
+        if (x[i] != 0)
+        {
+            std::cout << "x[" << i << "] : " << x[i] << std::endl;
+            std::cout << "pressure[" << i << "] : " << m_voxels->pressure[i] << std::endl;
+        }
+    }
 }
 
 void Simulator::applyPressureTerm()
