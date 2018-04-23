@@ -45,7 +45,7 @@ void Scene::writeData_inVtiFormat()
 
     ofs << "<Piece Extent='0 " << N - 1 << " 0 " << N - 1 << " 0 " << N - 1 << "'>" << std::endl;
 
-    ofs << "<CellData Vectors='velocity' Scalars='density' Scalars='temperature' Scalars='pressure' Scalars='omega'>" << std::endl;
+    ofs << "<CellData Vectors='velocity' Scalars='density temperature pressure omega'>" << std::endl;
 
     ofs << "<DataArray type='Float32' Name='velocity' NumberOfComponents='3' format='ascii'>" << std::endl;
     for (int k = 0; k < N; ++k)

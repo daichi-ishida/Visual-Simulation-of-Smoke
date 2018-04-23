@@ -51,6 +51,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 
 .PHONY : debug
 debug :
+	@if [ ! -e $(OUTPUT_DIR) ]; then mkdir -p $(OUTPUT_DIR); fi
 	$(DEBUG) $(BINDIR)/$(EXECUTABLE)
 
 .PHONY : run

@@ -13,13 +13,13 @@ int main()
 
     printf("\n*** START SIMULATION ***\n");
 
-    scene->writeData();
+    //scene->writeData();
 
     while (1)
     {
         time += DT;
         simulator->update();
-        scene->writeData();
+        //scene->writeData();
 
         if (time >= FINISH_TIME)
         {

@@ -113,9 +113,12 @@ void Simulator::calVorticity()
                 m_voxels->eta_y[POS(i, j, k)] = (m_voxels->omg_length[POS(i, j + 1, k)] - m_voxels->omg_length[POS(i, j, k)]) * N / LENGTH;
                 m_voxels->eta_z[POS(i, j, k)] = (m_voxels->omg_length[POS(i, j, k + 1)] - m_voxels->omg_length[POS(i, j, k)]) * N / LENGTH;
                 double norm = l2norm(m_voxels->eta_x[POS(i, j, k)], m_voxels->eta_y[POS(i, j, k)], m_voxels->eta_z[POS(i, j, k)]);
-                m_voxels->eta_x[POS(i, j, k)] /= norm;
-                m_voxels->eta_y[POS(i, j, k)] /= norm;
-                m_voxels->eta_z[POS(i, j, k)] /= norm;
+                if (norm != 0)
+                {
+                    m_voxels->eta_x[POS(i, j, k)] /= norm;
+                    m_voxels->eta_y[POS(i, j, k)] /= norm;
+                    m_voxels->eta_z[POS(i, j, k)] /= norm;
+                }
             }
         }
     }
@@ -215,7 +218,7 @@ void Simulator::calPressure()
     A.reserve(7 * SIZE);
     b.setZero();
 
-    double coeff = LENGTH * RHO / (N * DT);
+    double coeff = LENGTH * RHO / ((double)N * DT);
 
     for (int k = 0; k < N; ++k)
     {
