@@ -3,7 +3,7 @@ BUILD_TYPE := Debug
 OUTPUT_DIR := output
 
 CXX_DEBUG_FLAGS := -g -O0 -Wall
-CXX_RELEASE_FLAGS := -s -O2
+CXX_RELEASE_FLAGS := -s -O3
 
 CXXFLAGS := -MMD -MP -std=gnu++14
 BINDIR := bin

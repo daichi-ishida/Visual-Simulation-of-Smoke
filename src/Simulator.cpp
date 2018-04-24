@@ -5,29 +5,6 @@ Simulator::Simulator(Voxels *voxels) : m_voxels(voxels), A(SIZE, SIZE), b(SIZE),
 {
     // nnz size is estimated by 7*SIZE because there are 7 nnz elements in a row.(center and neighbor 6)
     tripletList.reserve(7 * SIZE);
-    ICCG.setTolerance(1.0e-12);
-    // set wall
-    for (int k = 0; k < N; ++k)
-    {
-        for (int j = 0; j < N; ++j)
-        {
-            for (int i = 0; i < N; ++i)
-            {
-                if (k == 0 || k == N)
-                {
-                    m_voxels->is_fluid[POS(i, j, k)] = false;
-                }
-                else if (i == 0 || i == N || j == 0 || j == N)
-                {
-                    m_voxels->is_fluid[POS(i, j, k)] = false;
-                }
-                else
-                {
-                    m_voxels->is_fluid[POS(i, j, k)] = true;
-                }
-            }
-        }
-    }
 }
 
 Simulator::~Simulator()
@@ -53,9 +30,12 @@ void Simulator::addSource()
 {
     for (int k = N / 2 - SOURCE_SIZE / 2; k < N / 2 + SOURCE_SIZE / 2; ++k)
     {
-        for (int i = N / 2 - SOURCE_SIZE / 2; i < N / 2 + SOURCE_SIZE / 2; ++i)
+        for (int j = 0; k < SOURCE_SIZE; ++k)
         {
-            m_voxels->dens[POS(i, SOURCE_MARGIN, k)] = 1.0;
+            for (int i = N / 2 - SOURCE_SIZE / 2; i < N / 2 + SOURCE_SIZE / 2; ++i)
+            {
+                m_voxels->dens[POS(i, j, k)] = 1.0;
+            }
         }
     }
 }
@@ -91,29 +71,47 @@ void Simulator::calVorticity()
         }
     }
 
-    for (int k = 1; k < N - 1; ++k)
+    for (int k = 0; k < N; ++k)
     {
-        for (int j = 1; j < N - 1; ++j)
+        for (int j = 0; j < N; ++j)
         {
-            for (int i = 1; i < N - 1; ++i)
+            for (int i = 0; i < N; ++i)
             {
-                m_voxels->omg_x[POS(i, j, k)] = (m_voxels->avg_w[POS(i, j + 1, k)] - m_voxels->avg_w[POS(i, j - 1, k)] - m_voxels->avg_v[POS(i, j, k + 1)] + m_voxels->avg_v[POS(i, j, k - 1)]) * 0.5 * N / LENGTH;
-                m_voxels->omg_y[POS(i, j, k)] = (m_voxels->avg_u[POS(i, j, k + 1)] - m_voxels->avg_u[POS(i, j, k - 1)] - m_voxels->avg_w[POS(i + 1, j, k)] + m_voxels->avg_w[POS(i - 1, j, k)]) * 0.5 * N / LENGTH;
-                m_voxels->omg_z[POS(i, j, k)] = (m_voxels->avg_v[POS(i + 1, j, k)] - m_voxels->avg_v[POS(i - 1, j, k)] - m_voxels->avg_u[POS(i, j + 1, k)] + m_voxels->avg_u[POS(i, j - 1, k)]) * 0.5 * N / LENGTH;
+                if (j > 0 && j < N - 1 && k > 0 || k < N - 1)
+                {
+                    m_voxels->omg_x[POS(i, j, k)] = (m_voxels->avg_w[POS(i, j + 1, k)] - m_voxels->avg_w[POS(i, j - 1, k)] - m_voxels->avg_v[POS(i, j, k + 1)] + m_voxels->avg_v[POS(i, j, k - 1)]) * 0.5 * N / (double)LENGTH;
+                }
+                if (k > 0 && k < N - 1 && i > 0 || i < N - 1)
+                {
+                    m_voxels->omg_y[POS(i, j, k)] = (m_voxels->avg_u[POS(i, j, k + 1)] - m_voxels->avg_u[POS(i, j, k - 1)] - m_voxels->avg_w[POS(i + 1, j, k)] + m_voxels->avg_w[POS(i - 1, j, k)]) * 0.5 * N / (double)LENGTH;
+                }
+                if (i > 0 && i < N - 1 && j > 0 || j < N - 1)
+                {
+                    m_voxels->omg_z[POS(i, j, k)] = (m_voxels->avg_v[POS(i + 1, j, k)] - m_voxels->avg_v[POS(i - 1, j, k)] - m_voxels->avg_u[POS(i, j + 1, k)] + m_voxels->avg_u[POS(i, j - 1, k)]) * 0.5 * N / (double)LENGTH;
+                }
                 m_voxels->omg_length[POS(i, j, k)] = l2norm(m_voxels->omg_x[POS(i, j, k)], m_voxels->omg_y[POS(i, j, k)], m_voxels->omg_z[POS(i, j, k)]);
             }
         }
     }
 
-    for (int k = 0; k < N - 1; ++k)
+    for (int k = 0; k < N; ++k)
     {
-        for (int j = 0; j < N - 1; ++j)
+        for (int j = 0; j < N; ++j)
         {
-            for (int i = 0; i < N - 1; ++i)
+            for (int i = 0; i < N; ++i)
             {
-                m_voxels->eta_x[POS(i, j, k)] = (m_voxels->omg_length[POS(i + 1, j, k)] - m_voxels->omg_length[POS(i, j, k)]) * N / LENGTH;
-                m_voxels->eta_y[POS(i, j, k)] = (m_voxels->omg_length[POS(i, j + 1, k)] - m_voxels->omg_length[POS(i, j, k)]) * N / LENGTH;
-                m_voxels->eta_z[POS(i, j, k)] = (m_voxels->omg_length[POS(i, j, k + 1)] - m_voxels->omg_length[POS(i, j, k)]) * N / LENGTH;
+                if (i < N - 1)
+                {
+                    m_voxels->eta_x[POS(i, j, k)] = (m_voxels->omg_length[POS(i + 1, j, k)] - m_voxels->omg_length[POS(i, j, k)]) * N / (double)LENGTH;
+                }
+                if (j < N - 1)
+                {
+                    m_voxels->eta_y[POS(i, j, k)] = (m_voxels->omg_length[POS(i, j + 1, k)] - m_voxels->omg_length[POS(i, j, k)]) * N / (double)LENGTH;
+                }
+                if (k < N - 1)
+                {
+                    m_voxels->eta_z[POS(i, j, k)] = (m_voxels->omg_length[POS(i, j, k + 1)] - m_voxels->omg_length[POS(i, j, k)]) * N / (double)LENGTH;
+                }
                 double norm = l2norm(m_voxels->eta_x[POS(i, j, k)], m_voxels->eta_y[POS(i, j, k)], m_voxels->eta_z[POS(i, j, k)]);
                 if (norm != 0)
                 {
@@ -125,15 +123,15 @@ void Simulator::calVorticity()
         }
     }
 
-    for (int k = 0; k < N - 1; ++k)
+    for (int k = 0; k < N; ++k)
     {
-        for (int j = 0; j < N - 1; ++j)
+        for (int j = 0; j < N; ++j)
         {
-            for (int i = 0; i < N - 1; ++i)
+            for (int i = 0; i < N; ++i)
             {
-                m_voxels->fx[POS(i, j, k)] += VORT_EPS * (N / LENGTH) * (m_voxels->eta_y[POS(i, j, k)] * m_voxels->omg_z[POS(i, j, k)] - m_voxels->eta_z[POS(i, j, k)] * m_voxels->omg_y[POS(i, j, k)]);
-                m_voxels->fy[POS(i, j, k)] += VORT_EPS * (N / LENGTH) * (m_voxels->eta_z[POS(i, j, k)] * m_voxels->omg_x[POS(i, j, k)] - m_voxels->eta_x[POS(i, j, k)] * m_voxels->omg_z[POS(i, j, k)]);
-                m_voxels->fz[POS(i, j, k)] += VORT_EPS * (N / LENGTH) * (m_voxels->eta_x[POS(i, j, k)] * m_voxels->omg_y[POS(i, j, k)] - m_voxels->eta_y[POS(i, j, k)] * m_voxels->omg_x[POS(i, j, k)]);
+                m_voxels->fx[POS(i, j, k)] += VORT_EPS * (N / (double)LENGTH) * (m_voxels->eta_y[POS(i, j, k)] * m_voxels->omg_z[POS(i, j, k)] - m_voxels->eta_z[POS(i, j, k)] * m_voxels->omg_y[POS(i, j, k)]);
+                m_voxels->fy[POS(i, j, k)] += VORT_EPS * (N / (double)LENGTH) * (m_voxels->eta_z[POS(i, j, k)] * m_voxels->omg_x[POS(i, j, k)] - m_voxels->eta_x[POS(i, j, k)] * m_voxels->omg_z[POS(i, j, k)]);
+                m_voxels->fz[POS(i, j, k)] += VORT_EPS * (N / (double)LENGTH) * (m_voxels->eta_x[POS(i, j, k)] * m_voxels->omg_y[POS(i, j, k)] - m_voxels->eta_y[POS(i, j, k)] * m_voxels->omg_x[POS(i, j, k)]);
             }
         }
     }
@@ -141,15 +139,24 @@ void Simulator::calVorticity()
 
 void Simulator::addForce()
 {
-    for (int k = 0; k < N - 1; ++k)
+    for (int k = 0; k < N; ++k)
     {
-        for (int j = 0; j < N - 1; ++j)
+        for (int j = 0; j < N; ++j)
         {
-            for (int i = 0; i < N - 1; ++i)
+            for (int i = 0; i < N; ++i)
             {
-                m_voxels->u[POSU(i + 1, j, k)] += DT * (m_voxels->fx[POS(i, j, k)] + m_voxels->fx[POS(i + 1, j, k)]) * 0.5;
-                m_voxels->v[POSV(i, j + 1, k)] += DT * (m_voxels->fy[POS(i, j, k)] + m_voxels->fy[POS(i, j + 1, k)]) * 0.5;
-                m_voxels->w[POSW(i, j, k + 1)] += DT * (m_voxels->fz[POS(i, j, k)] + m_voxels->fz[POS(i, j, k + 1)]) * 0.5;
+                if (i < N - 1)
+                {
+                    m_voxels->u[POSU(i + 1, j, k)] += DT * (m_voxels->fx[POS(i, j, k)] + m_voxels->fx[POS(i + 1, j, k)]) * 0.5;
+                }
+                if (j < N - 1)
+                {
+                    m_voxels->v[POSV(i, j + 1, k)] += DT * (m_voxels->fy[POS(i, j, k)] + m_voxels->fy[POS(i, j + 1, k)]) * 0.5;
+                }
+                if (k < N - 1)
+                {
+                    m_voxels->w[POSW(i, j, k + 1)] += DT * (m_voxels->fz[POS(i, j, k)] + m_voxels->fz[POS(i, j, k + 1)]) * 0.5;
+                }
 
                 m_voxels->u0[POSU(i + 1, j, k)] = m_voxels->u[POSU(i + 1, j, k)];
                 m_voxels->v0[POSV(i, j + 1, k)] = m_voxels->v[POSV(i, j + 1, k)];
@@ -224,18 +231,23 @@ void Simulator::calPressure()
     b.setZero();
     x.setZero();
 
-    double coeff = -LENGTH * RHO / ((double)N * DT);
+    double coeff = LENGTH * RHO / ((double)N * DT);
 
-    for (int k = 1; k < N - 1; ++k)
+    for (int k = 0; k < N; ++k)
     {
-        for (int j = 1; j < N - 1; ++j)
+        for (int j = 0; j < N; ++j)
         {
-            for (int i = 1; i < N - 1; ++i)
+            for (int i = 0; i < N; ++i)
             {
-                double F[6] = {k > 0, j > 0, i > 0, i < N - 1, j < N - 1, k < N - 1};
+                double F[6] = {k > 0, j > 0, i > 0, i < N, j < N, k < N};
                 double D[6] = {-1.0, -1.0, -1.0, 1.0, 1.0, 1.0};
-                double U[6] = {m_voxels->w[POSW(i, j, k - 1)], m_voxels->v[POSV(i, j - 1, k)], m_voxels->u[POSU(i - 1, j, k)],
-                               m_voxels->u[POSU(i + 1, j, k)], m_voxels->v[POSV(i, j + 1, k)], m_voxels->w[POSW(i, j, k + 1)]};
+                double U[6];
+                U[0] = (k > 0) ? m_voxels->w[POSW(i, j, k - 1)] : 0.0;
+                U[1] = (j > 0) ? m_voxels->v[POSV(i, j - 1, k)] : 0.0;
+                U[2] = (i > 0) ? m_voxels->u[POSU(i - 1, j, k)] : 0.0;
+                U[3] = m_voxels->u[POSU(i + 1, j, k)];
+                U[4] = m_voxels->v[POSV(i, j + 1, k)];
+                U[5] = m_voxels->w[POSW(i, j, k + 1)];
                 double sum_F = 0.0;
 
                 for (int n = 0; n < 6; ++n)
@@ -243,15 +255,35 @@ void Simulator::calPressure()
                     sum_F += F[n];
                     b(POS(i, j, k)) += D[n] * F[n] * U[n];
                 }
-                b *= coeff;
+                b(POS(i, j, k)) *= coeff;
 
-                tripletList.push_back(T(POS(i, j, k), POS(i, j, k - 1), -F[0]));
-                tripletList.push_back(T(POS(i, j, k), POS(i, j - 1, k), -F[1]));
-                tripletList.push_back(T(POS(i, j, k), POS(i - 1, j, k), -F[2]));
-                tripletList.push_back(T(POS(i, j, k), POS(i, j, k), sum_F));
-                tripletList.push_back(T(POS(i, j, k), POS(i + 1, j, k), -F[3]));
-                tripletList.push_back(T(POS(i, j, k), POS(i, j + 1, k), -F[4]));
-                tripletList.push_back(T(POS(i, j, k), POS(i, j, k + 1), -F[5]));
+                if (k > 0)
+                {
+                    tripletList.push_back(T(POS(i, j, k), POS(i, j, k - 1), F[0]));
+                }
+                if (j > 0)
+                {
+                    tripletList.push_back(T(POS(i, j, k), POS(i, j - 1, k), F[1]));
+                }
+                if (i > 0)
+                {
+                    tripletList.push_back(T(POS(i, j, k), POS(i - 1, j, k), F[2]));
+                }
+
+                tripletList.push_back(T(POS(i, j, k), POS(i, j, k), -sum_F));
+
+                if (i < N - 1)
+                {
+                    tripletList.push_back(T(POS(i, j, k), POS(i + 1, j, k), F[3]));
+                }
+                if (j < N - 1)
+                {
+                    tripletList.push_back(T(POS(i, j, k), POS(i, j + 1, k), F[4]));
+                }
+                if (k < N - 1)
+                {
+                    tripletList.push_back(T(POS(i, j, k), POS(i, j, k + 1), F[5]));
+                }
             }
         }
     }
@@ -260,9 +292,6 @@ void Simulator::calPressure()
 
     /* solve sparse lenear system by ICCG */
     ICCG.compute(A);
-    x = ICCG.solve(b);
-    std::cout << "#iterations:     " << ICCG.iterations() << std::endl;
-    std::cout << "estimated error: " << ICCG.error() << std::endl;
     if (ICCG.info() == Eigen::Success)
     {
         std::cout << "SUCCESS: Convergence" << std::endl;
@@ -271,15 +300,11 @@ void Simulator::calPressure()
     {
         std::cout << "FAILED: No Convergence" << std::endl;
     }
+    x = ICCG.solve(b);
+    std::cout << "#iterations:     " << ICCG.iterations() << std::endl;
+    std::cout << "estimated error: " << ICCG.error() << std::endl;
+
     Eigen::Map<Eigen::VectorXd>(m_voxels->pressure, SIZE) = x;
-    for (int i = 0; i < SIZE; ++i)
-    {
-        if (x[i] != 0)
-        {
-            std::cout << "x[" << i << "] : " << x[i] << std::endl;
-            std::cout << "pressure[" << i << "] : " << m_voxels->pressure[i] << std::endl;
-        }
-    }
 }
 
 void Simulator::applyPressureTerm()
@@ -292,15 +317,15 @@ void Simulator::applyPressureTerm()
             {
                 if (i < N - 1)
                 {
-                    m_voxels->u[POSU(i, j, k)] -= DT * (m_voxels->pressure[POS(i + 1, j, k)] - m_voxels->pressure[POS(i, j, k)]) * N / LENGTH;
+                    m_voxels->u[POSU(i, j, k)] -= DT * (m_voxels->pressure[POS(i + 1, j, k)] - m_voxels->pressure[POS(i, j, k)]) * N / (double)LENGTH;
                 }
                 if (j < N - 1)
                 {
-                    m_voxels->v[POSV(i, j, k)] -= DT * (m_voxels->pressure[POS(i, j + 1, k)] - m_voxels->pressure[POS(i, j, k)]) * N / LENGTH;
+                    m_voxels->v[POSV(i, j, k)] -= DT * (m_voxels->pressure[POS(i, j + 1, k)] - m_voxels->pressure[POS(i, j, k)]) * N / (double)LENGTH;
                 }
                 if (k < N - 1)
                 {
-                    m_voxels->w[POSW(i, j, k)] -= DT * (m_voxels->pressure[POS(i, j, k + 1)] - m_voxels->pressure[POS(i, j, k)]) * N / LENGTH;
+                    m_voxels->w[POSW(i, j, k)] -= DT * (m_voxels->pressure[POS(i, j, k + 1)] - m_voxels->pressure[POS(i, j, k)]) * N / (double)LENGTH;
                 }
             }
         }

@@ -18,5 +18,4 @@ public:
 
   double dens[SIZE], temp[SIZE], pressure[SIZE];
   double fx[SIZE], fy[SIZE], fz[SIZE];
-  bool is_fluid[SIZE];
 };

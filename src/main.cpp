@@ -7,19 +7,22 @@
 int main()
 {
     double time = 0.0;
+    int step = 1;
     Voxels *voxels = new Voxels();
     Scene *scene = new Scene(voxels);
     Simulator *simulator = new Simulator(voxels);
 
     printf("\n*** START SIMULATION ***\n");
 
-    //scene->writeData();
+    scene->writeData();
 
     while (1)
     {
+        printf("\n=== STEP %d ===\n", step);
         time += DT;
         simulator->update();
-        //scene->writeData();
+        scene->writeData();
+        ++step;
 
         if (time >= FINISH_TIME)
         {
