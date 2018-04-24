@@ -8,14 +8,15 @@ constexpr int LENGTH = 640;
 
 /* Simulator Constants */
 constexpr int N = 32;
-constexpr int SOURCE_SIZE = N / 5;
+constexpr int SOURCE_SIZE = N / 3;
 constexpr int SOURCE_MARGIN = N / 10;
 constexpr double DT = 0.01;
 constexpr double RHO = 1.0;
-constexpr double VORT_EPS = 0.01;
+constexpr double INIT_DENSITY = 2.0;
+constexpr double VORT_EPS = 1000.0;
 constexpr double GRAVITY_Y = 9.8;
 constexpr double T_AMBIENT = 30.0;
-constexpr double FINISH_TIME = 2.0;
+constexpr double FINISH_TIME = 20.0;
 
 constexpr int SIZE = N * N * N;
 constexpr int MAC_SIZE = N * N * (N + 1);

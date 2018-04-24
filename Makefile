@@ -1,9 +1,9 @@
 CXX := g++
-BUILD_TYPE := Debug
+BUILD_TYPE := Release
 OUTPUT_DIR := output
 
 CXX_DEBUG_FLAGS := -g -O0 -Wall
-CXX_RELEASE_FLAGS := -s -O3
+CXX_RELEASE_FLAGS := -s -O2
 
 CXXFLAGS := -MMD -MP -std=gnu++14
 BINDIR := bin
@@ -24,7 +24,7 @@ LIBS := -LC:/MinGW/lib
 EXECUTABLE	:= main.exe
 RM := cmd //C del
 else
-INCLUDE	+= -I/usr/include/eigen3
+INCLUDE	+= -I/usr/local/include/eigen3
 LIBS := 
 EXECUTABLE	:= main
 RM := rm -f

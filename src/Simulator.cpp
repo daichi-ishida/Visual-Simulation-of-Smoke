@@ -1,10 +1,25 @@
 #include <cmath>
+#include <random>
 #include "Simulator.hpp"
 
 Simulator::Simulator(Voxels *voxels) : m_voxels(voxels), A(SIZE, SIZE), b(SIZE), x(SIZE)
 {
     // nnz size is estimated by 7*SIZE because there are 7 nnz elements in a row.(center and neighbor 6)
     tripletList.reserve(7 * SIZE);
+
+    /* add set temperature */
+    std::random_device rnd;
+    std::mt19937 mt(rnd());
+    std::uniform_real_distribution<double> rand1(0, 1);
+    for (int k = 0; k < N; ++k)
+    {
+        for (int i = 0; i < N; ++i)
+        {
+            m_voxels->temp[POS(i, N, k)] = 200 * rand1(mt);
+        }
+    }
+
+    addSource();
 }
 
 Simulator::~Simulator()
@@ -13,8 +28,6 @@ Simulator::~Simulator()
 
 void Simulator::update()
 {
-    addSource();
-
     resetForce();
     calVorticity();
     addForce();
@@ -30,11 +43,11 @@ void Simulator::addSource()
 {
     for (int k = N / 2 - SOURCE_SIZE / 2; k < N / 2 + SOURCE_SIZE / 2; ++k)
     {
-        for (int j = 0; k < SOURCE_SIZE; ++k)
+        for (int j = 0; j < SOURCE_SIZE; ++j)
         {
             for (int i = N / 2 - SOURCE_SIZE / 2; i < N / 2 + SOURCE_SIZE / 2; ++i)
             {
-                m_voxels->dens[POS(i, j, k)] = 1.0;
+                m_voxels->dens[POS(i, j, k)] = INIT_DENSITY;
             }
         }
     }
@@ -371,7 +384,7 @@ double Simulator::interp(double x, double y, double z, double q[], unsigned int 
     y = y - j;
     z = z - k;
 
-    double c[8] = {(1.0f - x) * (1.0f - y) * (1.0f - z), (1.0f - x) * (1.0f - y) * z, (1.0f - x) * y * (1.0f - z), x * (1.0f - y) * (1.0f - z), (1.0f - x) * y * z, x * (1.0f - y) * z, x * y * (1.0f - z), x * y * z};
+    double c[8] = {(1.0 - x) * (1.0 - y) * (1.0 - z), (1.0 - x) * (1.0 - y) * z, (1.0 - x) * y * (1.0 - z), x * (1.0 - y) * (1.0 - z), (1.0 - x) * y * z, x * (1.0 - y) * z, x * y * (1.0 - z), x * y * z};
 
     double ret = 0.0;
     for (int i = 0; i < 8; ++i)
