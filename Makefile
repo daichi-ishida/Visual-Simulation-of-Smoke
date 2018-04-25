@@ -43,6 +43,7 @@ all: $(BINDIR)/$(EXECUTABLE)
 
 $(BINDIR)/$(EXECUTABLE): $(OBJS) $(LIBS)
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
+	@if [ ! -e $(OUTPUT_DIR) ]; then mkdir -p $(OUTPUT_DIR); fi	
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $^ -o $@ $(LIBS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp

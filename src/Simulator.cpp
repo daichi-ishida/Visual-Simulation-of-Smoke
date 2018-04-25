@@ -20,6 +20,21 @@ Simulator::Simulator(Voxels *voxels) : m_voxels(voxels), A(SIZE, SIZE), b(SIZE),
     }
 
     addSource();
+    /* set emitter velocity */
+    for (int k = N / 2 - SOURCE_SIZE / 2; k < N / 2 + SOURCE_SIZE / 2; ++k)
+    {
+        for (int j = 0; j < SOURCE_SIZE; ++j)
+        {
+            for (int i = N / 2 - SOURCE_SIZE / 2; i < N / 2 + SOURCE_SIZE / 2; ++i)
+            {
+                if (j < N - 1)
+                {
+                    m_voxels->v[POSV(i, j + 1, k)] = INIT_VELOCITY;
+                }
+                m_voxels->v0[POSV(i, j + 1, k)] = m_voxels->v[POSV(i, j + 1, k)];
+            }
+        }
+    }
 }
 
 Simulator::~Simulator()
@@ -28,13 +43,14 @@ Simulator::~Simulator()
 
 void Simulator::update()
 {
-    resetForce();
-    calVorticity();
+    //resetForce();
+    averageVelocity();
+    //calVorticity();
     addForce();
     advectVelocity();
-    calPressure();
-    applyPressureTerm();
-
+    //calPressure();
+    //applyPressureTerm();
+    averageVelocity();
     advectScalar();
 }
 
@@ -69,7 +85,7 @@ void Simulator::resetForce()
     }
 }
 
-void Simulator::calVorticity()
+void Simulator::averageVelocity()
 {
     for (int k = 0; k < N; ++k)
     {
@@ -83,7 +99,10 @@ void Simulator::calVorticity()
             }
         }
     }
+}
 
+void Simulator::calVorticity()
+{
     for (int k = 0; k < N; ++k)
     {
         for (int j = 0; j < N; ++j)
@@ -357,9 +376,9 @@ void Simulator::advectScalar()
                 double y = j * LENGTH / (double)N;
                 double z = k * LENGTH / (double)N;
 
-                x = x - DT * interp(x, y, z, m_voxels->u, N, N, N);
-                y = y - DT * interp(x, y, z, m_voxels->v, N, N, N);
-                z = z - DT * interp(x, y, z, m_voxels->w, N, N, N);
+                x = x - DT * interp(x, y, z, m_voxels->avg_u, N, N, N);
+                y = y - DT * interp(x, y, z, m_voxels->avg_v, N, N, N);
+                z = z - DT * interp(x, y, z, m_voxels->avg_w, N, N, N);
 
                 m_voxels->dens[POS(i, j, k)] = interp(x, y, z, m_voxels->dens, N, N, N);
                 m_voxels->temp[POS(i, j, k)] = interp(x, y, z, m_voxels->temp, N, N, N);

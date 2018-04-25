@@ -19,6 +19,7 @@ public:
 private:
   void addSource();
   void resetForce();
+  void averageVelocity();
   void calVorticity();
   void addForce();
   void advectVelocity();
