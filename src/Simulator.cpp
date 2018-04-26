@@ -27,11 +27,8 @@ Simulator::Simulator(Voxels *voxels) : m_voxels(voxels), A(SIZE, SIZE), b(SIZE),
         {
             for (int i = N / 2 - SOURCE_SIZE / 2; i < N / 2 + SOURCE_SIZE / 2; ++i)
             {
-                if (j < N - 1)
-                {
-                    m_voxels->v[POSV(i, j + 1, k)] = INIT_VELOCITY;
-                }
-                m_voxels->v0[POSV(i, j + 1, k)] = m_voxels->v[POSV(i, j + 1, k)];
+                m_voxels->v[POSV(i, j, k)] = INIT_VELOCITY;
+                m_voxels->v0[POSV(i, j, k)] = m_voxels->v[POSV(i, j, k)];
             }
         }
     }
