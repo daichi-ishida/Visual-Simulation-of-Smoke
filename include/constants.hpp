@@ -29,3 +29,10 @@ constexpr int POSV(int i, int j, int k) { return i + N * j + (N + 1) * N * k; };
 constexpr int POSW(int i, int j, int k) { return i + N * j + N * N * k; };
 
 constexpr double l2norm(double x, double y, double z) { return std::sqrt(x * x + y * y + z * z); };
+
+enum EMode
+{
+    E_U = 0,
+    E_V = 1,
+    E_W = 2
+};

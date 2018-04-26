@@ -200,57 +200,57 @@ void Simulator::addForce()
 
 void Simulator::advectVelocity()
 {
-    for (int k = 0; k < N; ++k)
+    for (int k = 0; k <= N; ++k)
     {
-        for (int j = 0; j < N; ++j)
+        for (int j = 0; j <= N; ++j)
         {
-            for (int i = 1; i < N; ++i)
+            for (int i = 0; i <= N; ++i)
             {
                 double x = i * LENGTH / (double)N;
                 double y = (j + 0.5) * LENGTH / (double)N;
                 double z = (k + 0.5) * LENGTH / (double)N;
 
-                x = x - DT * interp(x, y - 0.5 * LENGTH / (double)N, z - 0.5 * LENGTH / (double)N, m_voxels->u0, N + 1, N, N);
-                y = y - DT * interp(x - 0.5 * LENGTH / (double)N, y, z - 0.5 * LENGTH / (double)N, m_voxels->v0, N, N + 1, N);
-                z = z - DT * interp(x - 0.5 * LENGTH / (double)N, y - 0.5 * LENGTH / (double)N, z, m_voxels->w0, N, N, N + 1);
+                x = x - DT * macInterp(x, y, z, m_voxels->u0, E_U, N + 1, N, N);
+                y = y - DT * macInterp(x, y, z, m_voxels->v0, E_V, N, N + 1, N);
+                z = z - DT * macInterp(x, y, z, m_voxels->w0, E_W, N, N, N + 1);
 
-                m_voxels->u[POSU(i, j, k)] = interp(x, y - 0.5 * LENGTH / (double)N, z - 0.5 * LENGTH / (double)N, m_voxels->u0, N + 1, N, N);
+                m_voxels->u[POSU(i, j, k)] = macInterp(x, y, z, m_voxels->u0, E_U, N + 1, N, N);
             }
         }
     }
-    for (int k = 0; k < N; ++k)
+    for (int k = 0; k <= N; ++k)
     {
-        for (int j = 1; j < N; ++j)
+        for (int j = 0; j <= N; ++j)
         {
-            for (int i = 0; i < N; ++i)
+            for (int i = 0; i <= N; ++i)
             {
                 double x = (i + 0.5) * LENGTH / (double)N;
                 double y = j * LENGTH / (double)N;
                 double z = (k + 0.5) * LENGTH / (double)N;
 
-                x = x - DT * interp(x, y - 0.5 * LENGTH / (double)N, z - 0.5 * LENGTH / (double)N, m_voxels->u0, N + 1, N, N);
-                y = y - DT * interp(x - 0.5 * LENGTH / (double)N, y, z - 0.5 * LENGTH / (double)N, m_voxels->v0, N, N + 1, N);
-                z = z - DT * interp(x - 0.5 * LENGTH / (double)N, y - 0.5 * LENGTH / (double)N, z, m_voxels->w0, N, N, N + 1);
+                x = x - DT * macInterp(x, y, z, m_voxels->u0, E_U, N + 1, N, N);
+                y = y - DT * macInterp(x, y, z, m_voxels->v0, E_V, N, N + 1, N);
+                z = z - DT * macInterp(x, y, z, m_voxels->w0, E_W, N, N, N + 1);
 
-                m_voxels->v[POSV(i, j, k)] = interp(x - 0.5 * LENGTH / (double)N, y, z - 0.5 * LENGTH / (double)N, m_voxels->v0, N, N + 1, N);
+                m_voxels->v[POSV(i, j, k)] = macInterp(x, y, z, m_voxels->v0, E_V, N, N + 1, N);
             }
         }
     }
-    for (int k = 1; k < N; ++k)
+    for (int k = 0; k <= N; ++k)
     {
-        for (int j = 0; j < N; ++j)
+        for (int j = 0; j <= N; ++j)
         {
-            for (int i = 0; i < N; ++i)
+            for (int i = 0; i <= N; ++i)
             {
                 double x = (i + 0.5) * LENGTH / (double)N;
                 double y = (j + 0.5) * LENGTH / (double)N;
                 double z = k * LENGTH / (double)N;
 
-                x = x - DT * interp(x, y - 0.5 * LENGTH / (double)N, z - 0.5 * LENGTH / (double)N, m_voxels->u0, N + 1, N, N);
-                y = y - DT * interp(x - 0.5 * LENGTH / (double)N, y, z - 0.5 * LENGTH / (double)N, m_voxels->v0, N, N + 1, N);
-                z = z - DT * interp(x - 0.5 * LENGTH / (double)N, y - 0.5 * LENGTH / (double)N, z, m_voxels->w0, N, N, N + 1);
+                x = x - DT * macInterp(x, y, z, m_voxels->u0, E_U, N + 1, N, N);
+                y = y - DT * macInterp(x, y, z, m_voxels->v0, E_V, N, N + 1, N);
+                z = z - DT * macInterp(x, y, z, m_voxels->w0, E_W, N, N, N + 1);
 
-                m_voxels->w[POSW(i, j, k)] = interp(x - 0.5 * LENGTH / (double)N, y - 0.5 * LENGTH / (double)N, z, m_voxels->w0, N, N, N + 1);
+                m_voxels->w[POSW(i, j, k)] = macInterp(x, y, z, m_voxels->w0, E_W, N, N, N + 1);
             }
         }
     }
@@ -398,6 +398,66 @@ double Simulator::interp(double x, double y, double z, double q[], unsigned int 
     unsigned int k = z;
 
     double f[8] = {q[POS(i, j, k)], q[POS(i, j, k + 1)], q[POS(i, j + 1, k)], q[POS(i + 1, j, k)], q[POS(i, j + 1, k + 1)], q[POS(i + 1, j, k + 1)], q[POS(i + 1, j + 1, k)], q[POS(i + 1, j + 1, k + 1)]};
+
+    x = x - i;
+    y = y - j;
+    z = z - k;
+
+    double c[8] = {(1.0 - x) * (1.0 - y) * (1.0 - z), (1.0 - x) * (1.0 - y) * z, (1.0 - x) * y * (1.0 - z), x * (1.0 - y) * (1.0 - z), (1.0 - x) * y * z, x * (1.0 - y) * z, x * y * (1.0 - z), x * y * z};
+
+    double ret = 0.0;
+    for (int i = 0; i < 8; ++i)
+    {
+        ret += c[i] * f[i];
+    }
+
+    return ret;
+}
+
+double Simulator::macInterp(double x, double y, double z, double q[], EMode mode, unsigned int Nx, unsigned int Ny, unsigned int Nz)
+{
+    x = std::fmax(0.0, std::fmin(Nx - 1 - 1e-6, N * x / (double)LENGTH));
+    y = std::fmax(0.0, std::fmin(Ny - 1 - 1e-6, N * y / (double)LENGTH));
+    z = std::fmax(0.0, std::fmin(Nz - 1 - 1e-6, N * z / (double)LENGTH));
+
+    unsigned int i = x;
+    unsigned int j = y;
+    unsigned int k = z;
+    double f[8];
+
+    switch (mode)
+    {
+    case E_U:
+        f[0] = q[POSU(i, j, k)];
+        f[1] = q[POSU(i, j, k + 1)];
+        f[2] = q[POSU(i, j + 1, k)];
+        f[3] = q[POSU(i + 1, j, k)];
+        f[4] = q[POSU(i, j + 1, k + 1)];
+        f[5] = q[POSU(i + 1, j, k + 1)];
+        f[6] = q[POSU(i + 1, j + 1, k)];
+        f[7] = q[POSU(i + 1, j + 1, k + 1)];
+        break;
+    case E_V:
+        f[0] = q[POSV(i, j, k)];
+        f[1] = q[POSV(i, j, k + 1)];
+        f[2] = q[POSV(i, j + 1, k)];
+        f[3] = q[POSV(i + 1, j, k)];
+        f[4] = q[POSV(i, j + 1, k + 1)];
+        f[5] = q[POSV(i + 1, j, k + 1)];
+        f[6] = q[POSV(i + 1, j + 1, k)];
+        f[7] = q[POSV(i + 1, j + 1, k + 1)];
+        break;
+    case E_W:
+        f[0] = q[POSW(i, j, k)];
+        f[1] = q[POSW(i, j, k + 1)];
+        f[2] = q[POSW(i, j + 1, k)];
+        f[3] = q[POSW(i + 1, j, k)];
+        f[4] = q[POSW(i, j + 1, k + 1)];
+        f[5] = q[POSW(i + 1, j, k + 1)];
+        f[6] = q[POSW(i + 1, j + 1, k)];
+        f[7] = q[POSW(i + 1, j + 1, k + 1)];
+        break;
+    }
 
     x = x - i;
     y = y - j;

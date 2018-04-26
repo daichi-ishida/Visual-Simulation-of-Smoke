@@ -29,6 +29,7 @@ private:
   void advectScalar();
 
   double interp(double x, double y, double z, double q[], unsigned int Nx, unsigned int Ny, unsigned int Nz);
+  double macInterp(double x, double y, double z, double q[], EMode mode, unsigned int Nx, unsigned int Ny, unsigned int Nz);
 
   Voxels *m_voxels;
 
