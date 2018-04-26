@@ -1,24 +1,24 @@
-#include <cstdio>
+#include <iostream>
 #include "constants.hpp"
 #include "Scene.hpp"
 #include "Simulator.hpp"
-#include "Voxels.hpp"
+#include "MACGrid.hpp"
 
 int main()
 {
     double time = 0.0;
     int step = 1;
-    Voxels *voxels = new Voxels();
-    Scene *scene = new Scene(voxels);
-    Simulator *simulator = new Simulator(voxels);
+    MACGrid *grids = new MACGrid();
+    Scene *scene = new Scene(grids);
+    Simulator *simulator = new Simulator(grids);
 
-    printf("\n*** START SIMULATION ***\n");
+    std::cout << "\n*** START SIMULATION ***\n";
 
     scene->writeData();
 
     while (1)
     {
-        printf("\n=== STEP %d ===\n", step);
+        std::cout << "\n=== STEP " << step << " ===\n";
         time += DT;
         simulator->update();
         scene->writeData();
@@ -30,7 +30,7 @@ int main()
         }
     }
 
-    printf("\n*** END ***\n");
+    std::cout << "\n*** END ***\n";
 
     if (simulator)
     {
@@ -40,9 +40,9 @@ int main()
     {
         delete scene;
     }
-    if (voxels)
+    if (grids)
     {
-        delete voxels;
+        delete grids;
     }
 
     return 0;

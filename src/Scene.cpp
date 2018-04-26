@@ -7,7 +7,7 @@
 #include "constants.hpp"
 #include "Scene.hpp"
 
-Scene::Scene(Voxels *voxels) : m_file_num(0), m_voxels(voxels)
+Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
 {
 }
 

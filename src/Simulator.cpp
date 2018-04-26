@@ -2,36 +2,33 @@
 #include <random>
 #include "Simulator.hpp"
 
-Simulator::Simulator(Voxels *voxels) : m_voxels(voxels), A(SIZE, SIZE), b(SIZE), x(SIZE)
+Simulator::Simulator(MACGrid *grids) : m_grids(grids), A(SIZE, SIZE), b(SIZE), x(SIZE)
 {
     // nnz size is estimated by 7*SIZE because there are 7 nnz elements in a row.(center and neighbor 6)
     tripletList.reserve(7 * SIZE);
 
-    /* add set temperature */
+    /* add set temperatureerature */
     std::random_device rnd;
     std::mt19937 mt(rnd());
     std::uniform_real_distribution<double> rand1(0, 1);
-    for (int k = 0; k < N; ++k)
+    for (int k = 0; k < Nz; ++k)
     {
-        for (int i = 0; i < N; ++i)
+        for (int i = 0; i < Nx; ++i)
         {
-            m_voxels->temp[POS(i, N, k)] = 200 * rand1(mt);
+            m_grids->temperature[POS(i, Ny, k)] = 200 * rand1(mt);
         }
     }
 
     addSource();
     /* set emitter velocity */
-    for (int k = N / 2 - SOURCE_SIZE / 2; k < N / 2 + SOURCE_SIZE / 2; ++k)
+    for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2; ++k)
     {
-        for (int j = 0; j < SOURCE_SIZE; ++j)
+        for (int j = 0; j < SOURCE_SIZE_Y; ++j)
         {
-            for (int i = N / 2 - SOURCE_SIZE / 2; i < N / 2 + SOURCE_SIZE / 2; ++i)
+            for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2; ++i)
             {
-                if (j < N - 1)
-                {
-                    m_voxels->v[POSV(i, j + 1, k)] = INIT_VELOCITY;
-                }
-                m_voxels->v0[POSV(i, j + 1, k)] = m_voxels->v[POSV(i, j + 1, k)];
+                m_grids->v[POSV(i, j, k)] = INIT_VELOCITY;
+                m_grids->v0[POSV(i, j, k)] = m_grids->v[POSV(i, j, k)];
             }
         }
     }
@@ -43,13 +40,13 @@ Simulator::~Simulator()
 
 void Simulator::update()
 {
-    //resetForce();
+    resetForce();
     averageVelocity();
-    //calVorticity();
+    calVorticity();
     addForce();
     advectVelocity();
-    //calPressure();
-    //applyPressureTerm();
+    calPressure();
+    applyPressureTerm();
     averageVelocity();
     advectScalar();
 }
@@ -57,13 +54,13 @@ void Simulator::update()
 /* private */
 void Simulator::addSource()
 {
-    for (int k = N / 2 - SOURCE_SIZE / 2; k < N / 2 + SOURCE_SIZE / 2; ++k)
+    for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2; ++k)
     {
-        for (int j = 0; j < SOURCE_SIZE; ++j)
+        for (int j = 0; j < SOURCE_SIZE_Y; ++j)
         {
-            for (int i = N / 2 - SOURCE_SIZE / 2; i < N / 2 + SOURCE_SIZE / 2; ++i)
+            for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2; ++i)
             {
-                m_voxels->dens[POS(i, j, k)] = INIT_DENSITY;
+                m_grids->density[POS(i, j, k)] = INIT_DENSITY;
             }
         }
     }
@@ -71,130 +68,97 @@ void Simulator::addSource()
 
 void Simulator::resetForce()
 {
-    for (int k = 0; k < N; ++k)
+    FOR_EACH_CELL
     {
-        for (int j = 0; j < N; ++j)
-        {
-            for (int i = 0; i < N; ++i)
-            {
-                m_voxels->fx[POS(i, j, k)] = 0.0;
-                m_voxels->fy[POS(i, j, k)] = GRAVITY_Y * m_voxels->dens[POS(i, j, k)] - (m_voxels->temp[POS(i, j, k)] - T_AMBIENT);
-                m_voxels->fz[POS(i, j, k)] = 0.0;
-            }
-        }
+        m_grids->fx[POS(i, j, k)] = 0.0;
+        m_grids->fy[POS(i, j, k)] = GRAVITY_Y * m_grids->density[POS(i, j, k)] - (m_grids->temperature[POS(i, j, k)] - T_AMBIENT);
+        m_grids->fz[POS(i, j, k)] = 0.0;
     }
 }
 
 void Simulator::averageVelocity()
 {
-    for (int k = 0; k < N; ++k)
+    FOR_EACH_CELL
     {
-        for (int j = 0; j < N; ++j)
-        {
-            for (int i = 0; i < N; ++i)
-            {
-                m_voxels->avg_u[POS(i, j, k)] = (m_voxels->u[POSU(i, j, k)] + m_voxels->u[POSU(i + 1, j, k)]) * 0.5;
-                m_voxels->avg_v[POS(i, j, k)] = (m_voxels->v[POSV(i, j, k)] + m_voxels->v[POSV(i, j + 1, k)]) * 0.5;
-                m_voxels->avg_w[POS(i, j, k)] = (m_voxels->w[POSW(i, j, k)] + m_voxels->w[POSW(i, j, k + 1)]) * 0.5;
-            }
-        }
+        m_grids->avg_u[POS(i, j, k)] = (m_grids->u[POSU(i, j, k)] + m_grids->u[POSU(i + 1, j, k)]) * 0.5;
+        m_grids->avg_v[POS(i, j, k)] = (m_grids->v[POSV(i, j, k)] + m_grids->v[POSV(i, j + 1, k)]) * 0.5;
+        m_grids->avg_w[POS(i, j, k)] = (m_grids->w[POSW(i, j, k)] + m_grids->w[POSW(i, j, k + 1)]) * 0.5;
     }
 }
 
 void Simulator::calVorticity()
 {
-    for (int k = 0; k < N; ++k)
+    FOR_EACH_CELL
     {
-        for (int j = 0; j < N; ++j)
+        // ignore boundary cells
+        if (i == 0 || j == 0 || k == 0)
         {
-            for (int i = 0; i < N; ++i)
-            {
-                if (j > 0 && j < N - 1 && k > 0 || k < N - 1)
-                {
-                    m_voxels->omg_x[POS(i, j, k)] = (m_voxels->avg_w[POS(i, j + 1, k)] - m_voxels->avg_w[POS(i, j - 1, k)] - m_voxels->avg_v[POS(i, j, k + 1)] + m_voxels->avg_v[POS(i, j, k - 1)]) * 0.5 * N / (double)LENGTH;
-                }
-                if (k > 0 && k < N - 1 && i > 0 || i < N - 1)
-                {
-                    m_voxels->omg_y[POS(i, j, k)] = (m_voxels->avg_u[POS(i, j, k + 1)] - m_voxels->avg_u[POS(i, j, k - 1)] - m_voxels->avg_w[POS(i + 1, j, k)] + m_voxels->avg_w[POS(i - 1, j, k)]) * 0.5 * N / (double)LENGTH;
-                }
-                if (i > 0 && i < N - 1 && j > 0 || j < N - 1)
-                {
-                    m_voxels->omg_z[POS(i, j, k)] = (m_voxels->avg_v[POS(i + 1, j, k)] - m_voxels->avg_v[POS(i - 1, j, k)] - m_voxels->avg_u[POS(i, j + 1, k)] + m_voxels->avg_u[POS(i, j - 1, k)]) * 0.5 * N / (double)LENGTH;
-                }
-                m_voxels->omg_length[POS(i, j, k)] = l2norm(m_voxels->omg_x[POS(i, j, k)], m_voxels->omg_y[POS(i, j, k)], m_voxels->omg_z[POS(i, j, k)]);
-            }
+            continue;
         }
+        if (i == Nx - 1 || j == Ny - 1 || k == Nz - 1)
+        {
+            continue;
+        }
+
+        m_grids->omg_x[POS(i, j, k)] = (m_grids->avg_w[POS(i, j + 1, k)] - m_grids->avg_w[POS(i, j - 1, k)] - m_grids->avg_v[POS(i, j, k + 1)] + m_grids->avg_v[POS(i, j, k - 1)]) * 0.5 / VOXEL_SIZE;
+        m_grids->omg_y[POS(i, j, k)] = (m_grids->avg_u[POS(i, j, k + 1)] - m_grids->avg_u[POS(i, j, k - 1)] - m_grids->avg_w[POS(i + 1, j, k)] + m_grids->avg_w[POS(i - 1, j, k)]) * 0.5 / VOXEL_SIZE;
+        m_grids->omg_z[POS(i, j, k)] = (m_grids->avg_v[POS(i + 1, j, k)] - m_grids->avg_v[POS(i - 1, j, k)] - m_grids->avg_u[POS(i, j + 1, k)] + m_grids->avg_u[POS(i, j - 1, k)]) * 0.5 / VOXEL_SIZE;
     }
 
-    for (int k = 0; k < N; ++k)
+    FOR_EACH_CELL
     {
-        for (int j = 0; j < N; ++j)
+        // ignore boundary cells
+        if (i == 0 || j == 0 || k == 0)
         {
-            for (int i = 0; i < N; ++i)
-            {
-                if (i < N - 1)
-                {
-                    m_voxels->eta_x[POS(i, j, k)] = (m_voxels->omg_length[POS(i + 1, j, k)] - m_voxels->omg_length[POS(i, j, k)]) * N / (double)LENGTH;
-                }
-                if (j < N - 1)
-                {
-                    m_voxels->eta_y[POS(i, j, k)] = (m_voxels->omg_length[POS(i, j + 1, k)] - m_voxels->omg_length[POS(i, j, k)]) * N / (double)LENGTH;
-                }
-                if (k < N - 1)
-                {
-                    m_voxels->eta_z[POS(i, j, k)] = (m_voxels->omg_length[POS(i, j, k + 1)] - m_voxels->omg_length[POS(i, j, k)]) * N / (double)LENGTH;
-                }
-                double norm = l2norm(m_voxels->eta_x[POS(i, j, k)], m_voxels->eta_y[POS(i, j, k)], m_voxels->eta_z[POS(i, j, k)]);
-                if (norm != 0)
-                {
-                    m_voxels->eta_x[POS(i, j, k)] /= norm;
-                    m_voxels->eta_y[POS(i, j, k)] /= norm;
-                    m_voxels->eta_z[POS(i, j, k)] /= norm;
-                }
-            }
+            continue;
         }
-    }
+        if (i == Nx - 1 || j == Ny - 1 || k == Nz - 1)
+        {
+            continue;
+        }
+        // compute gradient of vorticity using central differences
+        double p, q;
+        p = Vec3(m_grids->omg_x[POS(i + 1, j, k)], m_grids->omg_y[POS(i + 1, j, k)], m_grids->omg_z[POS(i + 1, j, k)]).norm();
+        q = Vec3(m_grids->omg_x[POS(i - 1, j, k)], m_grids->omg_y[POS(i - 1, j, k)], m_grids->omg_z[POS(i - 1, j, k)]).norm();
+        double grad1 = (p - q) * 0.5 / VOXEL_SIZE;
 
-    for (int k = 0; k < N; ++k)
-    {
-        for (int j = 0; j < N; ++j)
-        {
-            for (int i = 0; i < N; ++i)
-            {
-                m_voxels->fx[POS(i, j, k)] += VORT_EPS * (N / (double)LENGTH) * (m_voxels->eta_y[POS(i, j, k)] * m_voxels->omg_z[POS(i, j, k)] - m_voxels->eta_z[POS(i, j, k)] * m_voxels->omg_y[POS(i, j, k)]);
-                m_voxels->fy[POS(i, j, k)] += VORT_EPS * (N / (double)LENGTH) * (m_voxels->eta_z[POS(i, j, k)] * m_voxels->omg_x[POS(i, j, k)] - m_voxels->eta_x[POS(i, j, k)] * m_voxels->omg_z[POS(i, j, k)]);
-                m_voxels->fz[POS(i, j, k)] += VORT_EPS * (N / (double)LENGTH) * (m_voxels->eta_x[POS(i, j, k)] * m_voxels->omg_y[POS(i, j, k)] - m_voxels->eta_y[POS(i, j, k)] * m_voxels->omg_x[POS(i, j, k)]);
-            }
-        }
+        p = Vec3(m_grids->omg_x[POS(i, j + 1, k)], m_grids->omg_y[POS(i, j + 1, k)], m_grids->omg_z[POS(i, j + 1, k)]).norm();
+        q = Vec3(m_grids->omg_x[POS(i, j - 1, k)], m_grids->omg_y[POS(i, j - 1, k)], m_grids->omg_z[POS(i, j - 1, k)]).norm();
+        double grad2 = (p - q) * 0.5 / VOXEL_SIZE;
+
+        p = Vec3(m_grids->omg_x[POS(i, j, k + 1)], m_grids->omg_y[POS(i + 1, j, k + 1)], m_grids->omg_z[POS(i + 1, j, k + 1)]).norm();
+        q = Vec3(m_grids->omg_x[POS(i, j, k - 1)], m_grids->omg_y[POS(i - 1, j, k - 1)], m_grids->omg_z[POS(i - 1, j, k - 1)]).norm();
+        double grad3 = (p - q) * 0.5 / VOXEL_SIZE;
+
+        Vec3 gradVort(grad1, grad2, grad3);
+        // compute N vector
+        Vec3 N_ijk = gradVort / (gradVort.norm() + 10e-20);
+
+        Vec3 vorticity = Vec3(m_grids->omg_x[POS(i, j, k)], m_grids->omg_y[POS(i, j, k)], m_grids->omg_z[POS(i, j, k)]);
+        Vec3 f = VORT_EPS * VOXEL_SIZE * vorticity.cross(N_ijk);
+        m_grids->fx[POS(i, j, k)] += f[0];
+        m_grids->fy[POS(i, j, k)] += f[1];
+        m_grids->fz[POS(i, j, k)] += f[2];
     }
 }
 
 void Simulator::addForce()
 {
-    for (int k = 0; k < N; ++k)
+    FOR_EACH_CELL
     {
-        for (int j = 0; j < N; ++j)
+        // ignore first cells
+        if (i == 0 || j == 0 || k == 0)
         {
-            for (int i = 0; i < N; ++i)
-            {
-                if (i < N - 1)
-                {
-                    m_voxels->u[POSU(i + 1, j, k)] += DT * (m_voxels->fx[POS(i, j, k)] + m_voxels->fx[POS(i + 1, j, k)]) * 0.5;
-                }
-                if (j < N - 1)
-                {
-                    m_voxels->v[POSV(i, j + 1, k)] += DT * (m_voxels->fy[POS(i, j, k)] + m_voxels->fy[POS(i, j + 1, k)]) * 0.5;
-                }
-                if (k < N - 1)
-                {
-                    m_voxels->w[POSW(i, j, k + 1)] += DT * (m_voxels->fz[POS(i, j, k)] + m_voxels->fz[POS(i, j, k + 1)]) * 0.5;
-                }
-
-                m_voxels->u0[POSU(i + 1, j, k)] = m_voxels->u[POSU(i + 1, j, k)];
-                m_voxels->v0[POSV(i, j + 1, k)] = m_voxels->v[POSV(i, j + 1, k)];
-                m_voxels->w0[POSW(i, j, k + 1)] = m_voxels->w[POSW(i, j, k + 1)];
-            }
+            continue;
         }
+
+        m_grids->u[POSU(i, j, k)] += DT * (m_grids->fx[POS(i, j, k)] + m_grids->fx[POS(i + 1, j, k)]) * 0.5;
+        m_grids->v[POSV(i, j, k)] += DT * (m_grids->fy[POS(i, j, k)] + m_grids->fy[POS(i, j + 1, k)]) * 0.5;
+        m_grids->w[POSW(i, j, k)] += DT * (m_grids->fz[POS(i, j, k)] + m_grids->fz[POS(i, j, k + 1)]) * 0.5;
+
+        m_grids->u0[POSU(i, j, k)] = m_grids->u[POSU(i, j, k)];
+        m_grids->v0[POSV(i, j, k)] = m_grids->v[POSV(i, j, k)];
+        m_grids->w0[POSW(i, j, k)] = m_grids->w[POSW(i, j, k)];
     }
 }
 
@@ -210,11 +174,11 @@ void Simulator::advectVelocity()
                 double y = (j + 0.5) * LENGTH / (double)N;
                 double z = (k + 0.5) * LENGTH / (double)N;
 
-                x = x - DT * macInterp(x, y, z, m_voxels->u0, E_U, N + 1, N, N);
-                y = y - DT * macInterp(x, y, z, m_voxels->v0, E_V, N, N + 1, N);
-                z = z - DT * macInterp(x, y, z, m_voxels->w0, E_W, N, N, N + 1);
+                x = x - DT * macInterp(x, y, z, m_grids->u0, E_U, N + 1, N, N);
+                y = y - DT * macInterp(x, y, z, m_grids->v0, E_V, N, N + 1, N);
+                z = z - DT * macInterp(x, y, z, m_grids->w0, E_W, N, N, N + 1);
 
-                m_voxels->u[POSU(i, j, k)] = macInterp(x, y, z, m_voxels->u0, E_U, N + 1, N, N);
+                m_grids->u[POSU(i, j, k)] = macInterp(x, y, z, m_grids->u0, E_U, N + 1, N, N);
             }
         }
     }
@@ -228,11 +192,11 @@ void Simulator::advectVelocity()
                 double y = j * LENGTH / (double)N;
                 double z = (k + 0.5) * LENGTH / (double)N;
 
-                x = x - DT * macInterp(x, y, z, m_voxels->u0, E_U, N + 1, N, N);
-                y = y - DT * macInterp(x, y, z, m_voxels->v0, E_V, N, N + 1, N);
-                z = z - DT * macInterp(x, y, z, m_voxels->w0, E_W, N, N, N + 1);
+                x = x - DT * macInterp(x, y, z, m_grids->u0, E_U, N + 1, N, N);
+                y = y - DT * macInterp(x, y, z, m_grids->v0, E_V, N, N + 1, N);
+                z = z - DT * macInterp(x, y, z, m_grids->w0, E_W, N, N, N + 1);
 
-                m_voxels->v[POSV(i, j, k)] = macInterp(x, y, z, m_voxels->v0, E_V, N, N + 1, N);
+                m_grids->v[POSV(i, j, k)] = macInterp(x, y, z, m_grids->v0, E_V, N, N + 1, N);
             }
         }
     }
@@ -246,11 +210,11 @@ void Simulator::advectVelocity()
                 double y = (j + 0.5) * LENGTH / (double)N;
                 double z = k * LENGTH / (double)N;
 
-                x = x - DT * macInterp(x, y, z, m_voxels->u0, E_U, N + 1, N, N);
-                y = y - DT * macInterp(x, y, z, m_voxels->v0, E_V, N, N + 1, N);
-                z = z - DT * macInterp(x, y, z, m_voxels->w0, E_W, N, N, N + 1);
+                x = x - DT * macInterp(x, y, z, m_grids->u0, E_U, N + 1, N, N);
+                y = y - DT * macInterp(x, y, z, m_grids->v0, E_V, N, N + 1, N);
+                z = z - DT * macInterp(x, y, z, m_grids->w0, E_W, N, N, N + 1);
 
-                m_voxels->w[POSW(i, j, k)] = macInterp(x, y, z, m_voxels->w0, E_W, N, N, N + 1);
+                m_grids->w[POSW(i, j, k)] = macInterp(x, y, z, m_grids->w0, E_W, N, N, N + 1);
             }
         }
     }
@@ -274,12 +238,12 @@ void Simulator::calPressure()
                 double F[6] = {k > 0, j > 0, i > 0, i < N, j < N, k < N};
                 double D[6] = {-1.0, -1.0, -1.0, 1.0, 1.0, 1.0};
                 double U[6];
-                U[0] = (k > 0) ? m_voxels->w[POSW(i, j, k - 1)] : 0.0;
-                U[1] = (j > 0) ? m_voxels->v[POSV(i, j - 1, k)] : 0.0;
-                U[2] = (i > 0) ? m_voxels->u[POSU(i - 1, j, k)] : 0.0;
-                U[3] = m_voxels->u[POSU(i + 1, j, k)];
-                U[4] = m_voxels->v[POSV(i, j + 1, k)];
-                U[5] = m_voxels->w[POSW(i, j, k + 1)];
+                U[0] = (k > 0) ? m_grids->w[POSW(i, j, k - 1)] : 0.0;
+                U[1] = (j > 0) ? m_grids->v[POSV(i, j - 1, k)] : 0.0;
+                U[2] = (i > 0) ? m_grids->u[POSU(i - 1, j, k)] : 0.0;
+                U[3] = m_grids->u[POSU(i + 1, j, k)];
+                U[4] = m_grids->v[POSV(i, j + 1, k)];
+                U[5] = m_grids->w[POSW(i, j, k + 1)];
                 double sum_F = 0.0;
 
                 for (int n = 0; n < 6; ++n)
@@ -336,7 +300,7 @@ void Simulator::calPressure()
     std::cout << "#iterations:     " << ICCG.iterations() << std::endl;
     std::cout << "estimated error: " << ICCG.error() << std::endl;
 
-    Eigen::Map<Eigen::VectorXd>(m_voxels->pressure, SIZE) = x;
+    Eigen::Map<Eigen::VectorXd>(m_grids->pressure, SIZE) = x;
 }
 
 void Simulator::applyPressureTerm()
@@ -349,15 +313,15 @@ void Simulator::applyPressureTerm()
             {
                 if (i < N - 1)
                 {
-                    m_voxels->u[POSU(i, j, k)] -= DT * (m_voxels->pressure[POS(i + 1, j, k)] - m_voxels->pressure[POS(i, j, k)]) * N / (double)LENGTH;
+                    m_grids->u[POSU(i, j, k)] -= DT * (m_grids->pressure[POS(i + 1, j, k)] - m_grids->pressure[POS(i, j, k)]) * N / (double)LENGTH;
                 }
                 if (j < N - 1)
                 {
-                    m_voxels->v[POSV(i, j, k)] -= DT * (m_voxels->pressure[POS(i, j + 1, k)] - m_voxels->pressure[POS(i, j, k)]) * N / (double)LENGTH;
+                    m_grids->v[POSV(i, j, k)] -= DT * (m_grids->pressure[POS(i, j + 1, k)] - m_grids->pressure[POS(i, j, k)]) * N / (double)LENGTH;
                 }
                 if (k < N - 1)
                 {
-                    m_voxels->w[POSW(i, j, k)] -= DT * (m_voxels->pressure[POS(i, j, k + 1)] - m_voxels->pressure[POS(i, j, k)]) * N / (double)LENGTH;
+                    m_grids->w[POSW(i, j, k)] -= DT * (m_grids->pressure[POS(i, j, k + 1)] - m_grids->pressure[POS(i, j, k)]) * N / (double)LENGTH;
                 }
             }
         }
@@ -376,12 +340,12 @@ void Simulator::advectScalar()
                 double y = j * LENGTH / (double)N;
                 double z = k * LENGTH / (double)N;
 
-                x = x - DT * interp(x, y, z, m_voxels->avg_u, N, N, N);
-                y = y - DT * interp(x, y, z, m_voxels->avg_v, N, N, N);
-                z = z - DT * interp(x, y, z, m_voxels->avg_w, N, N, N);
+                x = x - DT * interp(x, y, z, m_grids->avg_u, N, N, N);
+                y = y - DT * interp(x, y, z, m_grids->avg_v, N, N, N);
+                z = z - DT * interp(x, y, z, m_grids->avg_w, N, N, N);
 
-                m_voxels->dens[POS(i, j, k)] = interp(x, y, z, m_voxels->dens, N, N, N);
-                m_voxels->temp[POS(i, j, k)] = interp(x, y, z, m_voxels->temp, N, N, N);
+                m_grids->density[POS(i, j, k)] = interp(x, y, z, m_grids->density, N, N, N);
+                m_grids->temperature[POS(i, j, k)] = interp(x, y, z, m_grids->temperature, N, N, N);
             }
         }
     }

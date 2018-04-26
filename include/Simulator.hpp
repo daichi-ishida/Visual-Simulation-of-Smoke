@@ -3,7 +3,7 @@
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
-#include "Voxels.hpp"
+#include "MACGrid.hpp"
 
 typedef Eigen::Triplet<double> T;
 
@@ -11,7 +11,7 @@ class Simulator
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  Simulator(Voxels *voxels);
+  Simulator(MACGrid *grids);
   ~Simulator();
 
   void update();
@@ -28,10 +28,7 @@ private:
 
   void advectScalar();
 
-  double interp(double x, double y, double z, double q[], unsigned int Nx, unsigned int Ny, unsigned int Nz);
-  double macInterp(double x, double y, double z, double q[], EMode mode, unsigned int Nx, unsigned int Ny, unsigned int Nz);
-
-  Voxels *m_voxels;
+  MACGrid *m_grids;
 
   // solver
   std::vector<T> tripletList;

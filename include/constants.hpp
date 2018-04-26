@@ -1,15 +1,13 @@
 #pragma once
-#include <cmath>
-#include <iostream>
-#include <string>
+#include <cassert>
 
-/* Scene Constants */
-constexpr int LENGTH = 640;
+constexpr double VOXEL_SIZE = 1.0;
+constexpr int Nx = 32, Ny = 64, Nz = 32;
 
-/* Simulator Constants */
-constexpr int N = 32;
-constexpr int SOURCE_SIZE = N / 3;
-constexpr int SOURCE_MARGIN = N / 10;
+constexpr int SOURCE_SIZE_X = Nx / 3;
+constexpr int SOURCE_SIZE_Y = Nx / 3;
+constexpr int SOURCE_SIZE_Z = Nx / 3;
+
 constexpr double DT = 0.1;
 constexpr double RHO = 1.0;
 constexpr double INIT_DENSITY = 1.0;
@@ -19,20 +17,29 @@ constexpr double GRAVITY_Y = 9.8;
 constexpr double T_AMBIENT = 30.0;
 constexpr double FINISH_TIME = 20.0;
 
-constexpr int SIZE = N * N * N;
-constexpr int MAC_SIZE = N * N * (N + 1);
+constexpr int SIZE = Nx * Ny * Nz;
+constexpr int MACSIZE_X = (Nx + 1) * Ny * Nz;
+constexpr int MACSIZE_Y = Nx * (Ny + 1) * Nz;
+constexpr int MACSIZE_Z = Nx * Ny * (Nz + 1);
 
-constexpr int POS(int i, int j, int k) { return i + N * j + N * N * k; };
-
-constexpr int POSU(int i, int j, int k) { return i + (N + 1) * j + N * (N + 1) * k; };
-constexpr int POSV(int i, int j, int k) { return i + N * j + (N + 1) * N * k; };
-constexpr int POSW(int i, int j, int k) { return i + N * j + N * N * k; };
-
-constexpr double l2norm(double x, double y, double z) { return std::sqrt(x * x + y * y + z * z); };
-
-enum EMode
+constexpr int POS(int i, int j, int k)
 {
-    E_U = 0,
-    E_V = 1,
-    E_W = 2
-};
+    assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));
+    return i + Nx * j + Nx * Ny * k;
+}
+
+constexpr int POSU(int i, int j, int k)
+{
+    assert((i >= 0 || i <= Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));
+    return i + (Nx + 1) * j + (Nx + 1) * Ny * k;
+}
+constexpr int POSV(int i, int j, int k)
+{
+    assert((i >= 0 || i < Nx) || (j >= 0 || j <= Ny) || (k >= 0 || k < Nz));
+    return i + Nx * j + Nx * (Ny + 1) * k;
+}
+constexpr int POSW(int i, int j, int k)
+{
+    assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k <= Nz));
+    return i + Nx * j + Nx * Ny * k;
+}
