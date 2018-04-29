@@ -1,10 +1,10 @@
 #pragma once
-#include "Voxels.hpp"
+#include "MACGrid.hpp"
 
 class Scene
 {
 public:
-  Scene(Voxels *voxels);
+  Scene(MACGrid *grids);
   ~Scene();
 
   void writeData();
@@ -13,5 +13,5 @@ private:
   void writeData_inVtiFormat();
 
   int m_file_num;
-  Voxels *m_voxels;
+  MACGrid *m_grids;
 };

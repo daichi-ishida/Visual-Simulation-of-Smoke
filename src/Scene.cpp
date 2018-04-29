@@ -7,7 +7,7 @@
 #include "constants.hpp"
 #include "Scene.hpp"
 
-Scene::Scene(Voxels *voxels) : m_file_num(0), m_voxels(voxels)
+Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
 {
 }
 
@@ -41,33 +41,28 @@ void Scene::writeData_inVtiFormat()
     /* header */
     ofs << "<?xml version='1.0' encoding='UTF-8'?>" << std::endl;
     ofs << "<VTKFile xmlns='VTK' byte_order='LittleEndian' version='0.1' type='ImageData'>" << std::endl;
-    ofs << "<ImageData WholeExtent='0 " << N << " 0 " << N << " 0 " << N << "' Origin='0 0 0' Spacing='1.0 1.0 1.0'>>" << std::endl;
+    ofs << "<ImageData WholeExtent='0 " << Nx << " 0 " << Ny << " 0 " << Nz << "' Origin='0 0 0' Spacing='1.0 1.0 1.0'>>" << std::endl;
 
-    ofs << "<Piece Extent='0 " << N << " 0 " << N << " 0 " << N << "'>" << std::endl;
+    ofs << "<Piece Extent='0 " << Nx << " 0 " << Ny << " 0 " << Nz << "'>" << std::endl;
 
     ofs << "<CellData Vectors='velocity' Scalars='density temperature pressure omega'>" << std::endl;
 
     ofs << "<DataArray type='Float32' Name='velocity' NumberOfComponents='3' format='ascii'>" << std::endl;
-    for (int k = 0; k < N; ++k)
+    FOR_EACH_CELL
     {
-        for (int j = 0; j < N; ++j)
-        {
-            for (int i = 0; i < N; ++i)
-            {
-                ofs << m_voxels->avg_u[POS(i, j, k)] << " " << m_voxels->avg_v[POS(i, j, k)] << " " << m_voxels->avg_w[POS(i, j, k)] << std::endl;
-            }
-        }
+        ofs << m_grids->avg_u[POS(i, j, k)] << " " << m_grids->avg_v[POS(i, j, k)] << " " << m_grids->avg_w[POS(i, j, k)] << std::endl;
     }
+
     ofs << "</DataArray>" << std::endl;
 
     ofs << "<DataArray type='Float32' Name='density' NumberOfComponents='1' format='ascii'>" << std::endl;
-    for (int k = 0; k < N; ++k)
+    for (int k = 0; k < Nz; ++k)
     {
-        for (int j = 0; j < N; ++j)
+        for (int j = 0; j < Ny; ++j)
         {
-            for (int i = 0; i < N; ++i)
+            for (int i = 0; i < Nx; ++i)
             {
-                ofs << m_voxels->dens[POS(i, j, k)] << " ";
+                ofs << m_grids->density(i, j, k) << " ";
             }
             ofs << std::endl;
         }
@@ -75,13 +70,13 @@ void Scene::writeData_inVtiFormat()
     ofs << "</DataArray>" << std::endl;
 
     ofs << "<DataArray type='Float32' Name='temperature' NumberOfComponents='1' format='ascii'>" << std::endl;
-    for (int k = 0; k < N; ++k)
+    for (int k = 0; k < Nz; ++k)
     {
-        for (int j = 0; j < N; ++j)
+        for (int j = 0; j < Ny; ++j)
         {
-            for (int i = 0; i < N; ++i)
+            for (int i = 0; i < Nx; ++i)
             {
-                ofs << m_voxels->temp[POS(i, j, k)] << " ";
+                ofs << m_grids->temperature(i, j, k) << " ";
             }
             ofs << std::endl;
         }
@@ -89,13 +84,13 @@ void Scene::writeData_inVtiFormat()
     ofs << "</DataArray>" << std::endl;
 
     ofs << "<DataArray type='Float32' Name='pressure' NumberOfComponents='1' format='ascii'>" << std::endl;
-    for (int k = 0; k < N; ++k)
+    for (int k = 0; k < Nz; ++k)
     {
-        for (int j = 0; j < N; ++j)
+        for (int j = 0; j < Ny; ++j)
         {
-            for (int i = 0; i < N; ++i)
+            for (int i = 0; i < Nx; ++i)
             {
-                ofs << m_voxels->pressure[POS(i, j, k)] << " ";
+                ofs << m_grids->pressure(i, j, k) << " ";
             }
             ofs << std::endl;
         }
@@ -103,13 +98,13 @@ void Scene::writeData_inVtiFormat()
     ofs << "</DataArray>" << std::endl;
 
     ofs << "<DataArray type='Float32' Name='omega' NumberOfComponents='1' format='ascii'>" << std::endl;
-    for (int k = 0; k < N; ++k)
+    for (int k = 0; k < Nz; ++k)
     {
-        for (int j = 0; j < N; ++j)
+        for (int j = 0; j < Ny; ++j)
         {
-            for (int i = 0; i < N; ++i)
+            for (int i = 0; i < Nx; ++i)
             {
-                ofs << m_voxels->omg_length[POS(i, j, k)] << " ";
+                ofs << m_grids->omg_length[POS(i, j, k)] << " ";
             }
             ofs << std::endl;
         }
