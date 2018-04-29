@@ -1,5 +1,5 @@
 CXX := g++
-BUILD_TYPE := Debug
+BUILD_TYPE := Release
 OUTPUT_DIR := output
 
 CXX_DEBUG_FLAGS := -g -O0 -Wall

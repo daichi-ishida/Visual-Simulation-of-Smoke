@@ -1,8 +1,7 @@
 #include "MACGrid.hpp"
 
 MACGrid::MACGrid() : avg_u(), avg_v(), avg_w(),
-                     omg_x(), omg_y(), omg_z(), omg_length(),
-                     eta_x(), eta_y(), eta_z(),
+                     omg_x(), omg_y(), omg_z(), vort(),
                      fx(), fy(), fz()
 {
 }

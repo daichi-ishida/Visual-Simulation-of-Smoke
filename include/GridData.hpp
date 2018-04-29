@@ -9,7 +9,6 @@ public:
   ~GridData();
 
   virtual double &operator()(int i, int j, int k);
-  virtual const double operator()(int i, int j, int k) const;
   virtual double *getScalarPtr();
 
   double interp(const Vec3 &pos);
@@ -22,10 +21,9 @@ class GridDataX : public GridData
 {
 public:
   GridDataX();
-  ~GridDataX();
+  virtual ~GridDataX();
 
-  double &operator()(int i, int j, int k) override;
-  const double operator()(int i, int j, int k) const override;
+  virtual double &operator()(int i, int j, int k);
 
 private:
   double mU[(Nx + 1) * Ny * Nz];
@@ -35,10 +33,9 @@ class GridDataY : public GridData
 {
 public:
   GridDataY();
-  ~GridDataY();
+  virtual ~GridDataY();
 
-  double &operator()(int i, int j, int k) override;
-  const double operator()(int i, int j, int k) const override;
+  virtual double &operator()(int i, int j, int k);
 
 private:
   double mV[Nx * (Ny + 1) * Nz];
@@ -48,10 +45,9 @@ class GridDataZ : public GridData
 {
 public:
   GridDataZ();
-  ~GridDataZ();
+  virtual ~GridDataZ();
 
-  double &operator()(int i, int j, int k) override;
-  const double operator()(int i, int j, int k) const override;
+  virtual double &operator()(int i, int j, int k);
 
 private:
   double mW[Nx * Ny * (Nz + 1)];

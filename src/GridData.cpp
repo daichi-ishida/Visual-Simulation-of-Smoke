@@ -3,14 +3,9 @@
 #include "GridData.hpp"
 
 /* GridData */
-GridData::GridData() {}
+GridData::GridData() : scalar() {}
 GridData::~GridData() {}
 double &GridData::operator()(int i, int j, int k)
-{
-    assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));
-    return scalar[i + Nx * j + Nx * Ny * k];
-}
-const double GridData::operator()(int i, int j, int k) const
 {
     assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));
     return scalar[i + Nx * j + Nx * Ny * k];
@@ -76,42 +71,27 @@ double GridData::interp(const Vec3 &pt)
 }
 
 /* GridDataX */
-GridDataX::GridDataX() {}
+GridDataX::GridDataX() : GridData(), mU() {}
 GridDataX::~GridDataX() {}
 double &GridDataX::operator()(int i, int j, int k)
 {
     assert((i >= 0 || i <= Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));
     return mU[i + (Nx + 1) * j + (Nx + 1) * Ny * k];
 }
-const double GridDataX::operator()(int i, int j, int k) const
-{
-    assert((i >= 0 || i <= Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));
-    return mU[i + (Nx + 1) * j + (Nx + 1) * Ny * k];
-}
 
 /* GridDataY */
-GridDataY::GridDataY() {}
+GridDataY::GridDataY() : GridData(), mV() {}
 GridDataY::~GridDataY() {}
 double &GridDataY::operator()(int i, int j, int k)
 {
     assert((i >= 0 || i < Nx) || (j >= 0 || j <= Ny) || (k >= 0 || k < Nz));
     return mV[i + Nx * j + Nx * (Ny + 1) * k];
 }
-const double GridDataY::operator()(int i, int j, int k) const
-{
-    assert((i >= 0 || i < Nx) || (j >= 0 || j <= Ny) || (k >= 0 || k < Nz));
-    return mV[i + Nx * j + Nx * (Ny + 1) * k];
-}
 
 /* GridDataZ */
-GridDataZ::GridDataZ() {}
+GridDataZ::GridDataZ() : GridData(), mW() {}
 GridDataZ::~GridDataZ() {}
 double &GridDataZ::operator()(int i, int j, int k)
-{
-    assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k <= Nz));
-    return mW[i + Nx * j + Nx * Ny * k];
-}
-const double GridDataZ::operator()(int i, int j, int k) const
 {
     assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k <= Nz));
     return mW[i + Nx * j + Nx * Ny * k];

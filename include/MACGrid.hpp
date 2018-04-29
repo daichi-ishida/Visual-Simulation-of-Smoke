@@ -44,7 +44,6 @@ public:
   GridDataZ w, w0;
   GridData density, temperature, pressure;
   double avg_u[SIZE], avg_v[SIZE], avg_w[SIZE];
-  double omg_x[SIZE], omg_y[SIZE], omg_z[SIZE], omg_length[SIZE];
-  double eta_x[SIZE], eta_y[SIZE], eta_z[SIZE];
+  double omg_x[SIZE], omg_y[SIZE], omg_z[SIZE], vort[SIZE];
   double fx[SIZE], fy[SIZE], fz[SIZE];
 };
