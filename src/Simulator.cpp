@@ -15,9 +15,12 @@ Simulator::Simulator(MACGrid *grids) : m_grids(grids), A(SIZE, SIZE), b(SIZE), x
     std::uniform_real_distribution<double> rand1(0, 1);
     for (int k = 0; k < Nz; ++k)
     {
-        for (int i = 0; i < Nx; ++i)
+        for (int j = Ny / 2.0; j < Ny; ++j)
         {
-            m_grids->temperature(i, 0, k) = T_AMP * rand1(mt) + T_AMBIENT;
+            for (int i = 0; i < Nx; ++i)
+            {
+                m_grids->temperature(i, j, k) = T_AMP * rand1(mt) + T_AMBIENT;
+            }
         }
     }
 
@@ -43,9 +46,11 @@ Simulator::~Simulator()
 void Simulator::update()
 {
     resetForce();
-    // calVorticity();
+    avgVelocity();
+    calVorticity();
     addForce();
     advectVelocity();
+    avgVelocity();
     calPressure();
     applyPressureTerm();
     advectScalar();
@@ -76,7 +81,7 @@ void Simulator::resetForce()
     }
 }
 
-void Simulator::calVorticity()
+void Simulator::avgVelocity()
 {
     FOR_EACH_CELL
     {
@@ -93,7 +98,10 @@ void Simulator::calVorticity()
         m_grids->avg_v[POS(i, j, k)] = (m_grids->v(i, j - 1, k) + m_grids->v(i, j + 1, k)) * 0.5;
         m_grids->avg_w[POS(i, j, k)] = (m_grids->w(i, j, k - 1) + m_grids->w(i, j, k + 1)) * 0.5;
     }
+}
 
+void Simulator::calVorticity()
+{
     FOR_EACH_CELL
     {
         // ignore boundary cells
@@ -218,12 +226,12 @@ void Simulator::calPressure()
         double F[6] = {k > 0, j > 0, i > 0, i < Nx, j < Ny, k < Nz};
         double D[6] = {-1.0, -1.0, -1.0, 1.0, 1.0, 1.0};
         double U[6];
-        U[0] = (k > 0) ? m_grids->w(i, j, k - 1) : 0.0;
-        U[1] = (j > 0) ? m_grids->v(i, j - 1, k) : 0.0;
-        U[2] = (i > 0) ? m_grids->u(i - 1, j, k) : 0.0;
-        U[3] = m_grids->u(i + 1, j, k);
-        U[4] = m_grids->v(i, j + 1, k);
-        U[5] = m_grids->w(i, j, k + 1);
+        U[0] = (k > 0) ? m_grids->avg_w[POS(i, j, k - 1)] : m_grids->w(i, j, 0);
+        U[1] = (j > 0) ? m_grids->avg_v[POS(i, j - 1, k)] : m_grids->v(i, 0, k);
+        U[2] = (i > 0) ? m_grids->avg_u[POS(i - 1, j, k)] : m_grids->u(0, j, k);
+        U[3] = (i < Nx - 1) ? m_grids->avg_u[POS(i + 1, j, k)] : m_grids->u(Nx, j, k);
+        U[4] = (j < Ny - 1) ? m_grids->avg_v[POS(i, j + 1, k)] : m_grids->v(i, Ny, k);
+        U[5] = (k < Nz - 1) ? m_grids->avg_w[POS(i, j, k + 1)] : m_grids->w(i, j, Nz);
         double sum_F = 0.0;
 
         for (int n = 0; n < 6; ++n)
@@ -285,18 +293,21 @@ void Simulator::applyPressureTerm()
 {
     FOR_EACH_CELL
     {
-        // ignore boundary cells
-        if (i == 0 || j == 0 || k == 0)
+        if (i > 0 && i < Nx - 1)
         {
-            continue;
+            m_grids->u(i, j, k) -= DT * 0.5 * (m_grids->pressure(i + 1, j, k) - m_grids->pressure(i - 1, j, k)) / VOXEL_SIZE;
+            m_grids->u0(i, j, k) = m_grids->u(i, j, k);
         }
-        if (i == Nx - 1 || j == Ny - 1 || k == Nz - 1)
+        if (j > 0 && j < Ny - 1)
         {
-            continue;
+            m_grids->v(i, j, k) -= DT * 0.5 * (m_grids->pressure(i, j + 1, k) - m_grids->pressure(i, j - 1, k)) / VOXEL_SIZE;
+            m_grids->v0(i, j, k) = m_grids->v(i, j, k);
         }
-        m_grids->u(i, j, k) -= DT * (m_grids->pressure(i + 1, j, k) - m_grids->pressure(i - 1, j, k)) / VOXEL_SIZE;
-        m_grids->v(i, j, k) -= DT * (m_grids->pressure(i, j + 1, k) - m_grids->pressure(i, j - 1, k)) / VOXEL_SIZE;
-        m_grids->w(i, j, k) -= DT * (m_grids->pressure(i, j, k + 1) - m_grids->pressure(i, j, k - 1)) / VOXEL_SIZE;
+        if (k > 0 && k < Nz - 1)
+        {
+            m_grids->w(i, j, k) -= DT * 0.5 * (m_grids->pressure(i, j, k + 1) - m_grids->pressure(i, j, k - 1)) / VOXEL_SIZE;
+            m_grids->w0(i, j, k) = m_grids->w(i, j, k);
+        }
     }
 }
 

@@ -19,6 +19,7 @@ public:
 private:
   void addSource();
   void resetForce();
+  void avgVelocity();
   void calVorticity();
   void addForce();
   void advectVelocity();
@@ -31,8 +32,8 @@ private:
 
   // solver
   std::vector<T> tripletList;
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower | Eigen::Upper, Eigen::IncompleteCholesky<double>> ICCG;
-  // Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower | Eigen::Upper> ICCG;
+  // Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower | Eigen::Upper, Eigen::IncompleteCholesky<double>> ICCG;
+  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower | Eigen::Upper> ICCG;
 
   Eigen::SparseMatrix<double, Eigen::RowMajor> A;
   Eigen::VectorXd b;
