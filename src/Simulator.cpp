@@ -43,7 +43,7 @@ Simulator::~Simulator()
 void Simulator::update()
 {
     resetForce();
-    calVorticity();
+    // calVorticity();
     addForce();
     advectVelocity();
     calPressure();
