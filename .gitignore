@@ -3,6 +3,6 @@
 bin/
 obj/
 pdfs/
-output/
 
+*.vti
 *.mp4
