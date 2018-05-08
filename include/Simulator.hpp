@@ -11,12 +11,13 @@ class Simulator
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  Simulator(MACGrid *grids);
+  Simulator(MACGrid *grids, double &time);
   ~Simulator();
 
   void update();
 
 private:
+  void setEmitterVelocity();
   void addSource();
   void resetForce();
   void avgVelocity();
@@ -29,6 +30,7 @@ private:
   void advectScalar();
 
   MACGrid *m_grids;
+  double &m_time;
 
   // solver
   std::vector<T> tripletList;

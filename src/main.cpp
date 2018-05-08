@@ -10,7 +10,7 @@ int main()
     int step = 1;
     MACGrid *grids = new MACGrid();
     Scene *scene = new Scene(grids);
-    Simulator *simulator = new Simulator(grids);
+    Simulator *simulator = new Simulator(grids, time);
 
     std::cout << "\n*** START SIMULATION ***\n";
 

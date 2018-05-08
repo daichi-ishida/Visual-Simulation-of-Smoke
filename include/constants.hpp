@@ -12,12 +12,13 @@ constexpr int SOURCE_Y_MERGIN = 2;
 constexpr double DT = 0.02;
 constexpr double RHO = 1.0;
 constexpr double INIT_DENSITY = 1.0;
-constexpr double INIT_VELOCITY = 20.0;
+constexpr double INIT_VELOCITY = 70.0;
 constexpr double VORT_EPS = 0.55;
 constexpr double ALPHA = 9.8;
 constexpr double BETA = 1.0;
 constexpr double T_AMP = 10.0;
-constexpr double T_AMBIENT = 30.0;
+constexpr double T_AMBIENT = 50.0;
+constexpr double EMIT_DURATION = 4.0;
 constexpr double FINISH_TIME = 10.0;
 
 constexpr int SIZE = Nx * Ny * Nz;
