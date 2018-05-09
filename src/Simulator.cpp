@@ -7,22 +7,21 @@ Simulator::Simulator(MACGrid *grids, double &time) : m_grids(grids), m_time(time
 {
     // nnz size is estimated by 7*SIZE because there are 7 nnz elements in a row.(center and neighbor 6)
     tripletList.reserve(7 * SIZE);
-    ICCG.setTolerance(0.0001);
+    // ICCG.setTolerance(0.0001);
 
-    /* add set temperatureerature */
-    std::random_device rnd;
-    std::mt19937 mt(rnd());
-    std::uniform_real_distribution<double> rand1(0, 1);
+    /*set temperature */
     for (int k = 0; k < Nz; ++k)
     {
         for (int j = 0; j < Ny; ++j)
         {
             for (int i = 0; i < Nx; ++i)
             {
-                m_grids->temperature(i, j, k) = (j / (float)Ny) * (T_AMP * rand1(mt) + T_AMBIENT);
+                m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
             }
         }
     }
+    addSource();
+    setEmitterVelocity();
 }
 
 Simulator::~Simulator()
@@ -31,11 +30,6 @@ Simulator::~Simulator()
 
 void Simulator::update()
 {
-    if (m_time < EMIT_DURATION)
-    {
-        addSource();
-        setEmitterVelocity();
-    }
     resetForce();
     calVorticity();
     addForce();
@@ -43,6 +37,11 @@ void Simulator::update()
     calPressure();
     applyPressureTerm();
     advectScalar();
+    if (m_time < EMIT_DURATION)
+    {
+        addSource();
+        setEmitterVelocity();
+    }
 }
 
 /* private */

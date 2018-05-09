@@ -19,9 +19,9 @@ double *GridData::getScalarPtr()
 double GridData::interp(const Vec3 &pt)
 {
     Vec3 pos;
-    pos[0] = std::min(std::max(0.0, pt[0] - VOXEL_SIZE * 0.5), (double)Nx);
-    pos[1] = std::min(std::max(0.0, pt[1] - VOXEL_SIZE * 0.5), (double)Ny);
-    pos[2] = std::min(std::max(0.0, pt[2] - VOXEL_SIZE * 0.5), (double)Nz);
+    pos[0] = std::min(std::max(0.0, pt[0]), (double)Nx);
+    pos[1] = std::min(std::max(0.0, pt[1]), (double)Ny);
+    pos[2] = std::min(std::max(0.0, pt[2]), (double)Nz);
 
     int i = (int)(pos[0] / VOXEL_SIZE);
     int j = (int)(pos[1] / VOXEL_SIZE);
