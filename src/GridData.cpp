@@ -18,10 +18,22 @@ double *GridData::getScalarPtr()
 
 double GridData::interp(const Vec3 &pt)
 {
+    switch (INTERPOLATION_METHOD)
+    {
+    case E_LINEAR:
+        return linearInterpolation(pt);
+    case E_MONOTONIC_CUBIC:
+        return monotonicCubicInterpolation(pt);
+    }
+}
+
+double GridData::linearInterpolation(const Vec3 &pt)
+{
     Vec3 pos;
-    pos[0] = std::min(std::max(0.0, pt[0]), (double)Nx);
-    pos[1] = std::min(std::max(0.0, pt[1]), (double)Ny);
-    pos[2] = std::min(std::max(0.0, pt[2]), (double)Nz);
+    // clamp position
+    pos[0] = std::min(std::max(0.0, pt[0]), (double)Nx * VOXEL_SIZE);
+    pos[1] = std::min(std::max(0.0, pt[1]), (double)Ny * VOXEL_SIZE);
+    pos[2] = std::min(std::max(0.0, pt[2]), (double)Nz * VOXEL_SIZE);
 
     int i = (int)(pos[0] / VOXEL_SIZE);
     int j = (int)(pos[1] / VOXEL_SIZE);
@@ -68,6 +80,71 @@ double GridData::interp(const Vec3 &pt)
     // Z
     double tmp = (1 - fractz) * tmp1234 + fractz * tmp5678;
     return tmp;
+}
+
+double GridData::monotonicCubicInterpolation(const Vec3 &pt)
+{
+    Vec3 pos;
+    // clamp position
+    pos[0] = std::min(std::max(VOXEL_SIZE, pt[0]), (double)(Nx - 2) * VOXEL_SIZE);
+    pos[1] = std::min(std::max(VOXEL_SIZE, pt[1]), (double)(Ny - 2) * VOXEL_SIZE);
+    pos[2] = std::min(std::max(VOXEL_SIZE, pt[2]), (double)(Nz - 2) * VOXEL_SIZE);
+
+    int i = (int)(pos[0] / VOXEL_SIZE);
+    int j = (int)(pos[1] / VOXEL_SIZE);
+    int k = (int)(pos[2] / VOXEL_SIZE);
+
+    double scale = 1.0 / VOXEL_SIZE;
+    double fractx = scale * (pos[0] - i * VOXEL_SIZE);
+    double fracty = scale * (pos[1] - j * VOXEL_SIZE);
+    double fractz = scale * (pos[2] - k * VOXEL_SIZE);
+
+    assert(fractx < 1.0 && fractx >= 0);
+    assert(fracty < 1.0 && fracty >= 0);
+    assert(fractz < 1.0 && fractz >= 0);
+
+    // Z:
+    double arr_z[4];
+    for (int z = 0; z < 4; ++z)
+    {
+        // X @ Z_(z-1):
+        double arr_x[4];
+        for (int x = 0; x < 4; ++x)
+        {
+            // Y @ X_(x-1), Z_(z-1):
+            double arr_y[4] = {(*this)(i + x - 1, j - 1, k + z - 1), (*this)(i + x - 1, j, k + z - 1), (*this)(i + x - 1, j + 1, k + z - 1), (*this)(i + x - 1, j + 2, k + z - 1)};
+            arr_x[x] = axis_monotonicCubicInterpolation(arr_y, fracty);
+        }
+        arr_z[z] = axis_monotonicCubicInterpolation(arr_x, fractx);
+    }
+
+    return axis_monotonicCubicInterpolation(arr_z, fractz);
+}
+
+double GridData::axis_monotonicCubicInterpolation(double f[], double t)
+{
+    // f[0]:f_k-1, f[1]:f_k, f[2]:f_k+1, f[3]:f_k+2
+    double delta = f[2] - f[1];
+    double d0 = 0.5 * (f[2] - f[0]);
+    double d1 = 0.5 * (f[3] - f[1]);
+
+    // neccessary condition for monotonic
+    d0 = sign(delta) * std::fabs(d0);
+    d1 = sign(delta) * std::fabs(d1);
+
+    double a0 = f[1];
+    double a1 = d0;
+    double a2 = 3 * delta - 2 * d0 - d1;
+    double a3 = d0 + d1 - delta;
+    return a3 * t * t * t + a2 * t * t + a1 * t + a0;
+}
+
+int GridData::sign(double a)
+{
+    // if a is positive, return 1
+    // if a is negative, return -1
+    // if a is zero, return 0
+    return (a > 0) - (a < 0);
 }
 
 /* GridDataX */

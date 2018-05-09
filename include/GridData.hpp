@@ -11,7 +11,13 @@ public:
   virtual double &operator()(int i, int j, int k);
   virtual double *getScalarPtr();
 
-  double interp(const Vec3 &pos);
+  double interp(const Vec3 &pt);
+
+protected:
+  double linearInterpolation(const Vec3 &pt);
+  double monotonicCubicInterpolation(const Vec3 &pt);
+  double axis_monotonicCubicInterpolation(double f[], double fract);
+  int sign(double a);
 
 private:
   double scalar[Nx * Ny * Nz];

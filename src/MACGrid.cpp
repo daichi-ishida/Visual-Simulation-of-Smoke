@@ -12,13 +12,11 @@ MACGrid::~MACGrid()
 
 Vec3 MACGrid::getCenter(int i, int j, int k)
 {
-    double xstart = VOXEL_SIZE / 2.0;
-    double ystart = VOXEL_SIZE / 2.0;
-    double zstart = VOXEL_SIZE / 2.0;
+    double half_dx = 0.5 * VOXEL_SIZE;
 
-    double x = xstart + i * VOXEL_SIZE;
-    double y = ystart + j * VOXEL_SIZE;
-    double z = zstart + k * VOXEL_SIZE;
+    double x = half_dx + i * VOXEL_SIZE;
+    double y = half_dx + j * VOXEL_SIZE;
+    double z = half_dx + k * VOXEL_SIZE;
     return Vec3(x, y, z);
 }
 

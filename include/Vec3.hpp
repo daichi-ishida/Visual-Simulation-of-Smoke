@@ -37,8 +37,8 @@ public:
   friend Vec3 operator^(const Vec3 &a, const Vec3 &b);     // cross product
   friend bool operator==(const Vec3 &a, const Vec3 &b);    // v1 == v2 ?
   friend bool operator!=(const Vec3 &a, const Vec3 &b);    // v1 != v2 ?
-  friend Vec3 Prod(const Vec3 &a, const Vec3 &b);          // term by term *
-  friend double Dot(const Vec3 &a, const Vec3 &b);         // dot product
-  friend double Distance(const Vec3 &a, const Vec3 &b);    // distance
-  friend double DistanceSqr(const Vec3 &a, const Vec3 &b); // distance sqr
+  friend Vec3 prod(const Vec3 &a, const Vec3 &b);          // term by term *
+  friend double dot(const Vec3 &a, const Vec3 &b);         // dot product
+  friend double distance(const Vec3 &a, const Vec3 &b);    // distance
+  friend double distanceSqr(const Vec3 &a, const Vec3 &b); // distance sqr
 };

@@ -1,8 +1,15 @@
 #pragma once
 #include <cassert>
 
+enum E_METHOD
+{
+    E_LINEAR = 0,
+    E_MONOTONIC_CUBIC = 1
+};
+
 constexpr double VOXEL_SIZE = 1.0;
 constexpr int Nx = 24, Ny = 48, Nz = 24;
+constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
 
 constexpr int SOURCE_SIZE_X = 6;
 constexpr int SOURCE_SIZE_Y = 2;
