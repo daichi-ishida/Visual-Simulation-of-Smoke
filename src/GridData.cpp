@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include "GridData.hpp"
 
 /* GridData */
@@ -135,7 +136,7 @@ double GridData::axis_monotonicCubicInterpolation(double f[], double t)
     double a0 = f[1];
     double a1 = d0;
     double a2 = 3 * delta - 2 * d0 - d1;
-    double a3 = d0 + d1 - delta;
+    double a3 = d0 + d1 - 2 * delta;
     return a3 * t * t * t + a2 * t * t + a1 * t + a0;
 }
 
