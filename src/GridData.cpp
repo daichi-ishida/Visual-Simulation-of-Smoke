@@ -87,9 +87,9 @@ double GridData::monotonicCubicInterpolation(const Vec3 &pt)
 {
     Vec3 pos;
     // clamp position
-    pos[0] = std::min(std::max(0.0, pt[0]), (double)(maxNx - 1) * VOXEL_SIZE - 1e-6);
-    pos[1] = std::min(std::max(0.0, pt[1]), (double)(maxNy - 1) * VOXEL_SIZE - 1e-6);
-    pos[2] = std::min(std::max(0.0, pt[2]), (double)(maxNz - 1) * VOXEL_SIZE - 1e-6);
+    pos[0] = std::min(std::max(0.0, pt[0]), (double)maxNx * VOXEL_SIZE - 1e-6);
+    pos[1] = std::min(std::max(0.0, pt[1]), (double)maxNy * VOXEL_SIZE - 1e-6);
+    pos[2] = std::min(std::max(0.0, pt[2]), (double)maxNz * VOXEL_SIZE - 1e-6);
 
     int i = (int)(pos[0] / VOXEL_SIZE);
     int j = (int)(pos[1] / VOXEL_SIZE);
@@ -115,10 +115,11 @@ double GridData::monotonicCubicInterpolation(const Vec3 &pt)
             // Y @ X_(x-1), Z_(z-1):
             int i1 = constrainIndex(i + x - 1, maxNx);
             int j1 = constrainIndex(j - 1, maxNy);
-            int j2 = constrainIndex(j + 2, maxNy);
+            int j2 = constrainIndex(j + 1, maxNy);
+            int j3 = constrainIndex(j + 2, maxNy);
             int k1 = constrainIndex(k + z - 1, maxNz);
 
-            double arr_y[4] = {(*this)(i1, j1, k1), (*this)(i1, j, k1), (*this)(i1, j + 1, k1), (*this)(i1, j2, k1)};
+            double arr_y[4] = {(*this)(i1, j1, k1), (*this)(i1, j, k1), (*this)(i1, j2, k1), (*this)(i1, j3, k1)};
             arr_x[x] = axis_monotonicCubicInterpolation(arr_y, fracty);
         }
         arr_z[z] = axis_monotonicCubicInterpolation(arr_x, fractx);

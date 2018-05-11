@@ -62,11 +62,11 @@ void Simulator::addSource()
 void Simulator::setEmitterVelocity()
 {
     /* set emitter velocity */
-    for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2; ++k)
+    for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k <= Nz / 2 + SOURCE_SIZE_Z / 2; ++k)
     {
-        for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
+        for (int j = SOURCE_Y_MERGIN; j <= SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
         {
-            for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2; ++i)
+            for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i <= Nx / 2 + SOURCE_SIZE_X / 2; ++i)
             {
                 m_grids->v(i, j, k) = INIT_VELOCITY;
                 m_grids->v0(i, j, k) = m_grids->v(i, j, k);
