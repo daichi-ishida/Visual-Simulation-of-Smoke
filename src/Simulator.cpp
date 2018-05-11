@@ -16,7 +16,7 @@ Simulator::Simulator(MACGrid *grids, double &time) : m_grids(grids), m_time(time
         {
             for (int i = 0; i < Nx; ++i)
             {
-                m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
+                m_grids->temperature(i, j, k) = ((Ny - j) / (float)Ny) * T_AMP + T_AMBIENT;
             }
         }
     }

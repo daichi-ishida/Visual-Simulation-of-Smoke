@@ -9,21 +9,21 @@ enum E_METHOD
 
 constexpr double VOXEL_SIZE = 1.0;
 constexpr int Nx = 24, Ny = 48, Nz = 24;
-constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
+constexpr E_METHOD INTERPOLATION_METHOD = E_LINEAR;
 
 constexpr int SOURCE_SIZE_X = 6;
-constexpr int SOURCE_SIZE_Y = 2;
+constexpr int SOURCE_SIZE_Y = 6;
 constexpr int SOURCE_SIZE_Z = 6;
 constexpr int SOURCE_Y_MERGIN = 4;
 
 constexpr double DT = 0.02;
 constexpr double RHO = 1.0;
 constexpr double INIT_DENSITY = 1.0;
-constexpr double INIT_VELOCITY = 80.0;
-constexpr double VORT_EPS = 0.55;
+constexpr double INIT_VELOCITY = 1.0;
+constexpr double VORT_EPS = 0.25;
 constexpr double ALPHA = 9.8;
-constexpr double BETA = 12.0;
-constexpr double T_AMP = 5.0;
+constexpr double BETA = 0.0;
+constexpr double T_AMP = 1.0;
 constexpr double T_AMBIENT = 50.0;
 constexpr double EMIT_DURATION = 2.0;
 constexpr double FINISH_TIME = 6.0;

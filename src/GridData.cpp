@@ -4,7 +4,7 @@
 #include "GridData.hpp"
 
 /* GridData */
-GridData::GridData() : scalar() {}
+GridData::GridData() : scalar(), maxNx(Nx - 1), maxNy(Ny - 1), maxNz(Nz - 1) {}
 GridData::~GridData() {}
 double &GridData::operator()(int i, int j, int k)
 {
@@ -32,9 +32,9 @@ double GridData::linearInterpolation(const Vec3 &pt)
 {
     Vec3 pos;
     // clamp position
-    pos[0] = std::min(std::max(0.0, pt[0]), (double)Nx * VOXEL_SIZE);
-    pos[1] = std::min(std::max(0.0, pt[1]), (double)Ny * VOXEL_SIZE);
-    pos[2] = std::min(std::max(0.0, pt[2]), (double)Nz * VOXEL_SIZE);
+    pos[0] = std::min(std::max(0.0, pt[0]), (double)maxNx * VOXEL_SIZE);
+    pos[1] = std::min(std::max(0.0, pt[1]), (double)maxNy * VOXEL_SIZE);
+    pos[2] = std::min(std::max(0.0, pt[2]), (double)maxNz * VOXEL_SIZE);
 
     int i = (int)(pos[0] / VOXEL_SIZE);
     int j = (int)(pos[1] / VOXEL_SIZE);
@@ -87,9 +87,9 @@ double GridData::monotonicCubicInterpolation(const Vec3 &pt)
 {
     Vec3 pos;
     // clamp position
-    pos[0] = std::min(std::max(VOXEL_SIZE, pt[0]), (double)(Nx - 2) * VOXEL_SIZE);
-    pos[1] = std::min(std::max(VOXEL_SIZE, pt[1]), (double)(Ny - 2) * VOXEL_SIZE);
-    pos[2] = std::min(std::max(VOXEL_SIZE, pt[2]), (double)(Nz - 2) * VOXEL_SIZE);
+    pos[0] = std::min(std::max(0.0, pt[0]), (double)(maxNx - 1) * VOXEL_SIZE - 1e-6);
+    pos[1] = std::min(std::max(0.0, pt[1]), (double)(maxNy - 1) * VOXEL_SIZE - 1e-6);
+    pos[2] = std::min(std::max(0.0, pt[2]), (double)(maxNz - 1) * VOXEL_SIZE - 1e-6);
 
     int i = (int)(pos[0] / VOXEL_SIZE);
     int j = (int)(pos[1] / VOXEL_SIZE);
@@ -113,7 +113,12 @@ double GridData::monotonicCubicInterpolation(const Vec3 &pt)
         for (int x = 0; x < 4; ++x)
         {
             // Y @ X_(x-1), Z_(z-1):
-            double arr_y[4] = {(*this)(i + x - 1, j - 1, k + z - 1), (*this)(i + x - 1, j, k + z - 1), (*this)(i + x - 1, j + 1, k + z - 1), (*this)(i + x - 1, j + 2, k + z - 1)};
+            int i1 = constrainIndex(i + x - 1, maxNx);
+            int j1 = constrainIndex(j - 1, maxNy);
+            int j2 = constrainIndex(j + 2, maxNy);
+            int k1 = constrainIndex(k + z - 1, maxNz);
+
+            double arr_y[4] = {(*this)(i1, j1, k1), (*this)(i1, j, k1), (*this)(i1, j + 1, k1), (*this)(i1, j2, k1)};
             arr_x[x] = axis_monotonicCubicInterpolation(arr_y, fracty);
         }
         arr_z[z] = axis_monotonicCubicInterpolation(arr_x, fractx);
@@ -148,8 +153,21 @@ int GridData::sign(double a)
     return (a > 0) - (a < 0);
 }
 
+int GridData::constrainIndex(int idx, int N)
+{
+    if (idx == -1)
+    {
+        return 0;
+    }
+    if (idx > N)
+    {
+        return N;
+    }
+    return idx;
+}
+
 /* GridDataX */
-GridDataX::GridDataX() : GridData(), mU() {}
+GridDataX::GridDataX() : GridData(), maxNx(Nx), maxNy(Ny - 1), maxNz(Nz - 1), mU() {}
 GridDataX::~GridDataX() {}
 double &GridDataX::operator()(int i, int j, int k)
 {
@@ -158,7 +176,7 @@ double &GridDataX::operator()(int i, int j, int k)
 }
 
 /* GridDataY */
-GridDataY::GridDataY() : GridData(), mV() {}
+GridDataY::GridDataY() : GridData(), maxNx(Nx - 1), maxNy(Ny), maxNz(Nz - 1), mV() {}
 GridDataY::~GridDataY() {}
 double &GridDataY::operator()(int i, int j, int k)
 {
@@ -167,7 +185,7 @@ double &GridDataY::operator()(int i, int j, int k)
 }
 
 /* GridDataZ */
-GridDataZ::GridDataZ() : GridData(), mW() {}
+GridDataZ::GridDataZ() : GridData(), maxNx(Nx - 1), maxNy(Ny - 1), maxNz(Nz), mW() {}
 GridDataZ::~GridDataZ() {}
 double &GridDataZ::operator()(int i, int j, int k)
 {
