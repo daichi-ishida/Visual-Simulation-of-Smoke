@@ -33,7 +33,7 @@ public:
   GridDataX();
   virtual ~GridDataX();
 
-  virtual double &operator()(int i, int j, int k);
+  double &operator()(int i, int j, int k) override;
 
 private:
   double mU[(Nx + 1) * Ny * Nz];
@@ -48,7 +48,7 @@ public:
   GridDataY();
   virtual ~GridDataY();
 
-  virtual double &operator()(int i, int j, int k);
+  double &operator()(int i, int j, int k) override;
 
 private:
   double mV[Nx * (Ny + 1) * Nz];
@@ -63,7 +63,7 @@ public:
   GridDataZ();
   virtual ~GridDataZ();
 
-  virtual double &operator()(int i, int j, int k);
+  double &operator()(int i, int j, int k) override;
 
 private:
   double mW[Nx * Ny * (Nz + 1)];

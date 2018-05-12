@@ -32,9 +32,9 @@ double GridData::linearInterpolation(const Vec3 &pt)
 {
     Vec3 pos;
     // clamp position
-    pos[0] = std::min(std::max(0.0, pt[0]), (double)maxNx * VOXEL_SIZE);
-    pos[1] = std::min(std::max(0.0, pt[1]), (double)maxNy * VOXEL_SIZE);
-    pos[2] = std::min(std::max(0.0, pt[2]), (double)maxNz * VOXEL_SIZE);
+    pos[0] = std::min(std::max(0.0, pt[0]), (double)maxNx * VOXEL_SIZE - 1e-6);
+    pos[1] = std::min(std::max(0.0, pt[1]), (double)maxNy * VOXEL_SIZE - 1e-6);
+    pos[2] = std::min(std::max(0.0, pt[2]), (double)maxNz * VOXEL_SIZE - 1e-6);
 
     int i = (int)(pos[0] / VOXEL_SIZE);
     int j = (int)(pos[1] / VOXEL_SIZE);
