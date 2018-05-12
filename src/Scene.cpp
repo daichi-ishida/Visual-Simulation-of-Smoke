@@ -27,8 +27,16 @@ void Scene::writeData_inVtiFormat()
 {
     std::ostringstream sout;
     sout << std::setfill('0') << std::setw(3) << std::right << m_file_num;
+    std::string file_name;
+    if (INTERPOLATION_METHOD == E_LINEAR)
+    {
+        file_name = "output/grids_linear" + sout.str() + ".vti";
+    }
+    else if (INTERPOLATION_METHOD == E_MONOTONIC_CUBIC)
+    {
+        file_name = "output/grids_monotonic" + sout.str() + ".vti";
+    }
 
-    std::string file_name = "output/grids" + sout.str() + ".vti";
     std::ofstream ofs;
     ofs.open(file_name);
     if (!ofs)
