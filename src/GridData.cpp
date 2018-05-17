@@ -136,8 +136,8 @@ double GridData::axis_monotonicCubicInterpolation(double f[], double t)
     double d1 = 0.5 * (f[3] - f[1]);
 
     // neccessary condition for monotonic
-    d0 = sign(delta) * std::fabs(d0);
-    d1 = sign(delta) * std::fabs(d1);
+    d0 = (double)sign(delta) * std::fabs(d0);
+    d1 = (double)sign(delta) * std::fabs(d1);
 
     double a0 = f[1];
     double a1 = d0;

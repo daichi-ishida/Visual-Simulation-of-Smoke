@@ -49,10 +49,10 @@ void Scene::writeData_inVtiFormat()
     /* header */
     ofs << "<?xml version='1.0' encoding='UTF-8'?>" << std::endl;
     ofs << "<VTKFile xmlns='VTK' byte_order='LittleEndian' version='0.1' type='ImageData'>" << std::endl;
-    ofs << "<ImageData WholeExtent='0 " << Nx * VOXEL_SIZE << " 0 " << Ny * VOXEL_SIZE << " 0 " << Nz * VOXEL_SIZE << "' Origin='0 0 0' Spacing='" << VOXEL_SIZE << " " << VOXEL_SIZE << " " << VOXEL_SIZE << "'>" << std::endl;
+    ofs << "<ImageData WholeExtent='0 " << Nx << " 0 " << Ny << " 0 " << Nz << "' Origin='0 0 0' Spacing='" << VOXEL_SIZE << " " << VOXEL_SIZE << " " << VOXEL_SIZE << "'>" << std::endl;
 
     ofs
-        << "<Piece Extent='0 " << Nx * VOXEL_SIZE << " 0 " << Ny * VOXEL_SIZE << " 0 " << Nz * VOXEL_SIZE << "'>" << std::endl;
+        << "<Piece Extent='0 " << Nx << " 0 " << Ny << " 0 " << Nz << "'>" << std::endl;
 
     ofs << "<CellData Vectors='velocity' Scalars='density temperature pressure vorticity'>" << std::endl;
 
