@@ -13,10 +13,13 @@ Simulator::Simulator(MACGrid *grids, double &time) : m_grids(grids), m_time(time
     std::random_device rnd;
     std::mt19937 engine(rnd());
     std::uniform_real_distribution<double> dist(0, T_AMP);
+    OPENMP_FOR
     for (int k = 0; k < Nz; ++k)
     {
+        OPENMP_FOR
         for (int j = 0; j < Ny; ++j)
         {
+            OPENMP_FOR
             for (int i = 0; i < Nx; ++i)
             {
                 m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
@@ -50,10 +53,13 @@ void Simulator::update()
 /* private */
 void Simulator::addSource()
 {
+    OPENMP_FOR
     for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
     {
+        OPENMP_FOR
         for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
         {
+            OPENMP_FOR
             for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
             {
                 m_grids->density(i, j, k) = INIT_DENSITY;
@@ -65,10 +71,13 @@ void Simulator::addSource()
 void Simulator::setEmitterVelocity()
 {
     /* set emitter velocity */
+    OPENMP_FOR
     for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
     {
+        OPENMP_FOR
         for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
         {
+            OPENMP_FOR
             for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
             {
                 m_grids->v(i, j, k) = INIT_VELOCITY;
@@ -80,7 +89,8 @@ void Simulator::setEmitterVelocity()
 
 void Simulator::resetForce()
 {
-    FOR_EACH_CELL
+
+    OMP_FOR_EACH_CELL
     {
         m_grids->fx[POS(i, j, k)] = 0.0;
         m_grids->fy[POS(i, j, k)] = ALPHA * m_grids->density(i, j, k) - BETA * (m_grids->temperature(i, j, k) - T_AMBIENT);
@@ -90,13 +100,13 @@ void Simulator::resetForce()
 
 void Simulator::calVorticity()
 {
-    FOR_EACH_CELL
+    OMP_FOR_EACH_CELL
     {
         m_grids->avg_u[POS(i, j, k)] = (m_grids->u(i, j, k) + m_grids->u(i + 1, j, k)) * 0.5;
         m_grids->avg_v[POS(i, j, k)] = (m_grids->v(i, j, k) + m_grids->v(i, j + 1, k)) * 0.5;
         m_grids->avg_w[POS(i, j, k)] = (m_grids->w(i, j, k) + m_grids->w(i, j, k + 1)) * 0.5;
     }
-    FOR_EACH_CELL
+    OMP_FOR_EACH_CELL
     {
         // ignore boundary cells
         if (i == 0 || j == 0 || k == 0)
@@ -113,7 +123,7 @@ void Simulator::calVorticity()
         m_grids->omg_z[POS(i, j, k)] = (m_grids->avg_v[POS(i + 1, j, k)] - m_grids->avg_v[POS(i - 1, j, k)] - m_grids->avg_u[POS(i, j + 1, k)] + m_grids->avg_u[POS(i, j - 1, k)]) * 0.5 / VOXEL_SIZE;
     }
 
-    FOR_EACH_CELL
+    OMP_FOR_EACH_CELL
     {
         // ignore boundary cells
         if (i == 0 || j == 0 || k == 0)
@@ -158,7 +168,7 @@ void Simulator::calVorticity()
 
 void Simulator::addForce()
 {
-    FOR_EACH_CELL
+    OMP_FOR_EACH_CELL
     {
         if (i < Nx - 1)
         {
@@ -181,7 +191,7 @@ void Simulator::addForce()
 
 void Simulator::advectVelocity()
 {
-    FOR_EACH_FACE_X
+    OMP_FOR_EACH_FACE_X
     {
         Vec3 pos_u = m_grids->getCenter(i, j, k) - 0.5 * Vec3(VOXEL_SIZE, 0, 0);
         Vec3 vel_u = m_grids->getVelocity(pos_u);
@@ -189,7 +199,7 @@ void Simulator::advectVelocity()
         m_grids->u(i, j, k) = m_grids->getVelocityX(pos0_u);
     }
 
-    FOR_EACH_FACE_Y
+    OMP_FOR_EACH_FACE_Y
     {
         Vec3 pos_v = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, VOXEL_SIZE, 0);
         Vec3 vel_v = m_grids->getVelocity(pos_v);
@@ -197,7 +207,7 @@ void Simulator::advectVelocity()
         m_grids->v(i, j, k) = m_grids->getVelocityY(pos0_v);
     }
 
-    FOR_EACH_FACE_Z
+    OMP_FOR_EACH_FACE_Z
     {
         Vec3 pos_w = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, 0, VOXEL_SIZE);
         Vec3 vel_w = m_grids->getVelocity(pos_w);
@@ -285,7 +295,7 @@ void Simulator::calPressure()
 
 void Simulator::applyPressureTerm()
 {
-    FOR_EACH_CELL
+    OMP_FOR_EACH_CELL
     {
         // compute gradient of pressure
         if (i < Nx - 1)
@@ -309,7 +319,7 @@ void Simulator::applyPressureTerm()
 
 void Simulator::advectScalar()
 {
-    FOR_EACH_CELL
+    OMP_FOR_EACH_CELL
     {
         Vec3 pos_cell = m_grids->getCenter(i, j, k);
         Vec3 vel_cell = m_grids->getVelocity(pos_cell);

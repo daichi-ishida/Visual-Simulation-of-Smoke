@@ -7,7 +7,7 @@ enum E_METHOD
     E_MONOTONIC_CUBIC = 1
 };
 
-constexpr double VOXEL_SIZE = 1.0;
+constexpr double VOXEL_SIZE = 0.1;
 constexpr int Nx = 25, Ny = 50, Nz = 25;
 constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
 
@@ -34,3 +34,20 @@ constexpr int POS(int i, int j, int k)
     assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));
     return i + Nx * j + Nx * Ny * k;
 }
+
+#ifdef _OPENMP
+#include <omp.h>
+#define OPENMP_FOR _Pragma("omp parallel for")
+#define OPENMP_SECTION _Pragma("omp section")
+#define OPENMP_BEGIN        \
+    _Pragma("omp parallel") \
+    {
+#define OPENMP_END }
+#define OPENMP_FOR_P _Pragma("omp for")
+#else
+#define OPENMP_FOR
+#define OPENMP_SECTION
+#define OPENMP_BEGIN
+#define OPENMP_END
+#define OPENMP_FOR_P
+#endif
