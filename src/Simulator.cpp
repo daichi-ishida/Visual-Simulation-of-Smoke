@@ -10,9 +10,9 @@ Simulator::Simulator(MACGrid *grids, double &time) : m_grids(grids), m_time(time
     ICCG.setTolerance(0.00001);
 
     /*set temperature */
-    std::random_device rnd;
-    std::mt19937 engine(rnd());
-    std::uniform_real_distribution<double> dist(0, T_AMP);
+    // std::random_device rnd;
+    // std::mt19937 engine(rnd());
+    // std::uniform_real_distribution<double> dist(0, T_AMP);
     OPENMP_FOR
     for (int k = 0; k < Nz; ++k)
     {
@@ -22,7 +22,8 @@ Simulator::Simulator(MACGrid *grids, double &time) : m_grids(grids), m_time(time
             OPENMP_FOR
             for (int i = 0; i < Nx; ++i)
             {
-                m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
+                m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
+                // m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
             }
         }
     }
@@ -225,6 +226,7 @@ void Simulator::calPressure()
 
     double coeff = VOXEL_SIZE / DT;
 
+#pragma omp parallel for ordered
     FOR_EACH_CELL
     {
         double F[6] = {k > 0, j > 0, i > 0, i < Nx - 1, j < Ny - 1, k < Nz - 1};
@@ -245,32 +247,35 @@ void Simulator::calPressure()
         }
         b(POS(i, j, k)) *= coeff;
 
-        if (k > 0)
+#pragma omp ordered
         {
-            tripletList.push_back(T(POS(i, j, k), POS(i, j, k - 1), F[0]));
-        }
-        if (j > 0)
-        {
-            tripletList.push_back(T(POS(i, j, k), POS(i, j - 1, k), F[1]));
-        }
-        if (i > 0)
-        {
-            tripletList.push_back(T(POS(i, j, k), POS(i - 1, j, k), F[2]));
-        }
+            if (k > 0)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i, j, k - 1), F[0]));
+            }
+            if (j > 0)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i, j - 1, k), F[1]));
+            }
+            if (i > 0)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i - 1, j, k), F[2]));
+            }
 
-        tripletList.push_back(T(POS(i, j, k), POS(i, j, k), -sum_F));
+            tripletList.push_back(T(POS(i, j, k), POS(i, j, k), -sum_F));
 
-        if (i < Nx - 1)
-        {
-            tripletList.push_back(T(POS(i, j, k), POS(i + 1, j, k), F[3]));
-        }
-        if (j < Ny - 1)
-        {
-            tripletList.push_back(T(POS(i, j, k), POS(i, j + 1, k), F[4]));
-        }
-        if (k < Nz - 1)
-        {
-            tripletList.push_back(T(POS(i, j, k), POS(i, j, k + 1), F[5]));
+            if (i < Nx - 1)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i + 1, j, k), F[3]));
+            }
+            if (j < Ny - 1)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i, j + 1, k), F[4]));
+            }
+            if (k < Nz - 1)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i, j, k + 1), F[5]));
+            }
         }
     }
 
