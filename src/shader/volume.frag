@@ -1,9 +1,15 @@
+#version 330 core
+
+in vec3 texCoords;
+
 uniform sampler3D densityTex;
 uniform vec3 eyePos;
 uniform vec3 lightPos;
 uniform vec3 lightIntensity;
 uniform float absorption;
  
+out vec4 color;
+
 void main()
 {
     // diagonal of the cube
@@ -16,8 +22,8 @@ void main()
     const float lscale = maxDist / float(numLightSamples);
  
     // assume all coordinates are in texture space
-    vec3 pos = gl_TexCoord[0].xyz;
-    vec3 eyeDir = normalize(pos-g_eyePos)*scale;
+    vec3 pos = texCoords.xyz;
+    vec3 eyeDir = normalize(pos-eyePos)*scale;
  
     // transmittance
     float T = 1.0;
@@ -27,18 +33,18 @@ void main()
     for (int i=0; i < numSamples; ++i)
     {
         // sample density
-        float density = texture3D(g_densityTex, pos).x;
- 
+        float density = texture(densityTex, pos).x;
+        // tester = vec3(density);
         // skip empty space
         if (density > 0.0)
         {
             // attenuate ray-throughput
-            T *= 1.0-density*scale*g_absorption;
+            T *= 1.0-density*scale*absorption;
             if (T <= 0.01)
                 break;
  
             // point light dir in texture space
-            vec3 lightDir = normalize(g_lightPos-pos)*lscale;
+            vec3 lightDir = normalize(lightPos-pos)*lscale;
  
             // sample light
             float Tl = 1.0; // transmittance along light ray
@@ -46,8 +52,8 @@ void main()
  
             for (int s=0; s < numLightSamples; ++s)
             {
-                float ld = texture3D(g_densityTex, lpos).x;
-                Tl *= 1.0-g_absorption*lscale*ld;
+                float ld = texture(densityTex, lpos).x;
+                Tl *= 1.0-absorption*lscale*ld;
  
                 if (Tl <= 0.01)
                     break;
@@ -55,7 +61,7 @@ void main()
                 lpos += lightDir;
             }
  
-            vec3 Li = g_lightIntensity*Tl;
+            vec3 Li = lightIntensity*Tl;
  
             Lo += Li*T*density*scale;
         }
@@ -63,6 +69,6 @@ void main()
         pos += eyeDir;
     }
  
-    gl_FragColor.xyz = Lo;
-    gl_FragColor.w = 1.0-T;
+    color.xyz = Lo;
+    color.w = 1.0-T;
 }

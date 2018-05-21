@@ -14,7 +14,7 @@ enum E_ADVECTION
 };
 
 constexpr double VOXEL_SIZE = 1.0;
-constexpr int Nx = 25, Ny = 50, Nz = 25;
+constexpr int Nx = 50, Ny = 50, Nz = 50;
 constexpr E_METHOD INTERPOLATION_METHOD = E_LINEAR;
 constexpr E_ADVECTION ADVECTION_METHOD = E_MAC_CORMACK;
 
@@ -46,8 +46,7 @@ constexpr int POS(int i, int j, int k)
 constexpr int WIN_WIDTH = 500;
 constexpr int WIN_HEIGHT = 500;
 static const char *WIN_TITLE = "Test";
-
-constexpr float radius = 0.5f;
+constexpr float RADIUS_THRESHOLD = 0.5f;
 
 #ifdef _OPENMP
 #include <omp.h>

@@ -12,30 +12,33 @@
 
 int main()
 {
-    // if (glfwInit() == GL_FALSE)
-    // {
-    //     fprintf(stderr, "Initialization failed!\n");
-    // }
+    if (glfwInit() == GL_FALSE)
+    {
+        fprintf(stderr, "Initialization failed!\n");
+    }
 
-    // GLFWwindow *window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, WIN_TITLE,
-    //                                       NULL, NULL);
-    // if (window == NULL)
-    // {
-    //     fprintf(stderr, "Window creation failed!");
-    //     glfwTerminate();
-    // }
-    // glfwMakeContextCurrent(window);
-    // if (glewInit() != GLEW_OK)
-    // {
-    //     fprintf(stderr, "GLEW initialization failed!\n");
-    // }
+    GLFWwindow *window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, WIN_TITLE,
+                                          NULL, NULL);
+    if (window == NULL)
+    {
+        fprintf(stderr, "Window creation failed!");
+        glfwTerminate();
+    }
+    glfwMakeContextCurrent(window);
+    if (glewInit() != GLEW_OK)
+    {
+        fprintf(stderr, "GLEW initialization failed!\n");
+    }
 
-    // // set background color black
-    // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    // set background color black
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-    // glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_TEXTURE_3D);
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_TEXTURE_3D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     double time = 0.0;
     int step = 1;
@@ -45,25 +48,25 @@ int main()
 
     std::cout << "\n*** START SIMULATION ***\n";
 
-    scene->writeData();
+    // scene->writeData();
+    simulator->update();
 
-    // while (glfwWindowShouldClose(window) == GL_FALSE)
-    while (1)
+    while (glfwWindowShouldClose(window) == GL_FALSE && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
     {
-        std::cout << "\n=== STEP " << step << " ===\n";
-        time += DT;
-        simulator->update();
-        scene->writeData();
-        // scene->update();
-        // scene->render();
+        // std::cout << "\n=== STEP " << step << " ===\n";
+        // time += DT;
+        // simulator->update();
+        // scene->writeData();
+        scene->update();
+        scene->render();
         ++step;
 
-        if (time >= FINISH_TIME)
-        {
-            break;
-        }
-        // glfwSwapBuffers(window);
-        // glfwPollEvents();
+        // if (time >= FINISH_TIME)
+        // {
+        //     break;
+        // }
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
     std::cout << "\n*** END ***\n";

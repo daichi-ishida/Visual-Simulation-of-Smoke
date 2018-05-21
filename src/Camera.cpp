@@ -4,9 +4,9 @@
 #include "Camera.hpp"
 #include "constants.hpp"
 
-Camera::Camera() : m_position(glm::vec3(4.0f, 3.0f, 3.0f)),
-                   m_horizontalAngle(0.0f),
-                   m_verticalAngle(M_PI / 2.0f),
+Camera::Camera() : m_position(glm::vec3(0.0f, 0.0f, 0.0f)),
+                   m_horizontalAngle(0.0),
+                   m_verticalAngle(0.0),
                    m_FoV(45.0f),
                    m_speed(10.0f),
                    m_mouseSpeed(0.005f)
@@ -70,12 +70,12 @@ void Camera::update()
         m_position -= direction * deltaTime * m_speed;
     }
     // Strafe right
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
         m_position += right * deltaTime * m_speed;
     }
     // Strafe left
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
         m_position -= right * deltaTime * m_speed;
     }

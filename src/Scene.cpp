@@ -15,9 +15,9 @@
 
 Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
 {
-    // std::string vertex_shader_file = std::string("./shader/") + "volume.vert";
-    // std::string fragment_shader_file = std::string("./shader/") + "volume.frag";
-    // m_volume = new Volume(m_grids, vertex_shader_file, fragment_shader_file);
+    std::string vertex_shader_file = std::string("/home/daichi/Documents/Visual-Simulation-of-Smoke/src/shader/") + "volume.vert";
+    std::string fragment_shader_file = std::string("/home/daichi/Documents/Visual-Simulation-of-Smoke/src/shader/") + "volume.frag";
+    m_volume = new Volume(m_grids, vertex_shader_file, fragment_shader_file);
 }
 
 Scene::~Scene()
