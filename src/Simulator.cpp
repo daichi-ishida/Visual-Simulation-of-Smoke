@@ -191,28 +191,59 @@ void Simulator::addForce()
 
 void Simulator::advectVelocity()
 {
-    OMP_FOR_EACH_FACE_X
+    switch (ADVECTION_METHOD)
     {
-        Vec3 pos_u = m_grids->getCenter(i, j, k) - 0.5 * Vec3(VOXEL_SIZE, 0, 0);
-        Vec3 vel_u = m_grids->getVelocity(pos_u);
-        Vec3 pos0_u = pos_u - DT * vel_u;
-        m_grids->u(i, j, k) = m_grids->getVelocityX(pos0_u);
-    }
+    case E_SEMI_LAGRANGE:
+        OMP_FOR_EACH_FACE_X
+        {
+            Vec3 pos_u = m_grids->getCenter(i, j, k) - 0.5 * Vec3(VOXEL_SIZE, 0, 0);
+            Vec3 vel_u = m_grids->getVelocity(pos_u);
+            Vec3 pos0_u = pos_u - DT * vel_u;
+            m_grids->u(i, j, k) = m_grids->getVelocityX(pos0_u);
+        }
 
-    OMP_FOR_EACH_FACE_Y
-    {
-        Vec3 pos_v = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, VOXEL_SIZE, 0);
-        Vec3 vel_v = m_grids->getVelocity(pos_v);
-        Vec3 pos0_v = pos_v - DT * vel_v;
-        m_grids->v(i, j, k) = m_grids->getVelocityY(pos0_v);
-    }
+        OMP_FOR_EACH_FACE_Y
+        {
+            Vec3 pos_v = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, VOXEL_SIZE, 0);
+            Vec3 vel_v = m_grids->getVelocity(pos_v);
+            Vec3 pos0_v = pos_v - DT * vel_v;
+            m_grids->v(i, j, k) = m_grids->getVelocityY(pos0_v);
+        }
 
-    OMP_FOR_EACH_FACE_Z
-    {
-        Vec3 pos_w = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, 0, VOXEL_SIZE);
-        Vec3 vel_w = m_grids->getVelocity(pos_w);
-        Vec3 pos0_w = pos_w - DT * vel_w;
-        m_grids->w(i, j, k) = m_grids->getVelocityZ(pos0_w);
+        OMP_FOR_EACH_FACE_Z
+        {
+            Vec3 pos_w = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, 0, VOXEL_SIZE);
+            Vec3 vel_w = m_grids->getVelocity(pos_w);
+            Vec3 pos0_w = pos_w - DT * vel_w;
+            m_grids->w(i, j, k) = m_grids->getVelocityZ(pos0_w);
+        }
+        break;
+
+    case E_MAC_CORMACK:
+        OMP_FOR_EACH_FACE_X
+        {
+            Vec3 pos_u = m_grids->getCenter(i, j, k) - 0.5 * Vec3(VOXEL_SIZE, 0, 0);
+            Vec3 vel_u = m_grids->getVelocity(pos_u);
+            Vec3 pos0_u = pos_u - DT * vel_u;
+            m_grids->u(i, j, k) = m_grids->getVelocityX(pos0_u);
+        }
+
+        OMP_FOR_EACH_FACE_Y
+        {
+            Vec3 pos_v = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, VOXEL_SIZE, 0);
+            Vec3 vel_v = m_grids->getVelocity(pos_v);
+            Vec3 pos0_v = pos_v - DT * vel_v;
+            m_grids->v(i, j, k) = m_grids->getVelocityY(pos0_v);
+        }
+
+        OMP_FOR_EACH_FACE_Z
+        {
+            Vec3 pos_w = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, 0, VOXEL_SIZE);
+            Vec3 vel_w = m_grids->getVelocity(pos_w);
+            Vec3 pos0_w = pos_w - DT * vel_w;
+            m_grids->w(i, j, k) = m_grids->getVelocityZ(pos0_w);
+        }
+        break;
     }
 }
 
