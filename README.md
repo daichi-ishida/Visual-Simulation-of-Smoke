@@ -4,7 +4,11 @@ This is the implementation of *Visual Simulation of Smoke* by Ronald Fedkiw, Jos
 ## Build
 **Windows is not supported.**
 
-Library you need is Eigen 3.3.4
+Libraries you need are 
+- Eigen 3.3.4
+- GLM
+- GLEW
+- GLFW
 
 You can build and execute following command.
 

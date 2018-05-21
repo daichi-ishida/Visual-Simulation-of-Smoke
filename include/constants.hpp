@@ -7,8 +7,9 @@ enum E_METHOD
     E_MONOTONIC_CUBIC = 1
 };
 
-constexpr double VOXEL_SIZE = 0.1;
-constexpr int Nx = 25, Ny = 50, Nz = 25;
+/* Simulation Constants */
+constexpr double VOXEL_SIZE = 1.0;
+constexpr int Nx = 50, Ny = 50, Nz = 50;
 constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
 
 constexpr int SOURCE_SIZE_X = 6;
@@ -34,6 +35,13 @@ constexpr int POS(int i, int j, int k)
     assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));
     return i + Nx * j + Nx * Ny * k;
 }
+
+/* Scene Constants */
+constexpr int WIN_WIDTH = 500;
+constexpr int WIN_HEIGHT = 500;
+static const char *WIN_TITLE = "Test";
+
+constexpr float radius = 0.5f;
 
 #ifdef _OPENMP
 #include <omp.h>

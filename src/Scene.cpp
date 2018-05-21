@@ -3,12 +3,21 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <vector>
 
-#include "constants.hpp"
+#define GLFW_INCLUDE_GLU
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+
 #include "Scene.hpp"
+#include "constants.hpp"
 
 Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
 {
+    std::string vertex_shader_file = std::string("./shader/") + "volume.vert";
+    std::string fragment_shader_file = std::string("./shader/") + "volume.frag";
+    m_volume = new Volume(m_grids, vertex_shader_file, fragment_shader_file);
 }
 
 Scene::~Scene()
@@ -21,8 +30,17 @@ void Scene::writeData()
     ++m_file_num;
 }
 
-/* private */
+void Scene::update()
+{
+    m_volume->update();
+}
 
+void Scene::render()
+{
+    m_volume->draw();
+}
+
+/* private */
 void Scene::writeData_inVtiFormat()
 {
     std::ostringstream sout;
