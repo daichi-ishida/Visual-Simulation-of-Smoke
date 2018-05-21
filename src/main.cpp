@@ -31,10 +31,13 @@ int main()
     }
 
     // set background color black
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     glEnable(GL_TEXTURE_3D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     double time = 0.0;
@@ -46,8 +49,9 @@ int main()
     std::cout << "\n*** START SIMULATION ***\n";
 
     // scene->writeData();
+    simulator->update();
 
-    while (glfwWindowShouldClose(window) == GL_FALSE)
+    while (glfwWindowShouldClose(window) == GL_FALSE && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
     {
         // std::cout << "\n=== STEP " << step << " ===\n";
         // time += DT;

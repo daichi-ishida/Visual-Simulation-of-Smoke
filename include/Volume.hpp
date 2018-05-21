@@ -22,7 +22,7 @@ public:
 
 private:
   std::string ReadFile(const std::string &filename);
-  GLuint createPyroclasticVolume(int n, float r);
+  GLuint createPyroclasticVolume(int n, float r_th);
 
   MACGrid *m_grids;
   Camera m_camera;
@@ -48,5 +48,6 @@ private:
 
   GLuint m_vertex_array_object;
   GLuint m_vertex_buffer_object;
+  GLuint m_texture_buffer_object;
   GLuint m_index_buffer_object;
 };

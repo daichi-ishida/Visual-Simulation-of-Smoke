@@ -25,7 +25,7 @@ EXECUTABLE	:= main.exe
 RM := cmd //C del
 else
 INCLUDE	+= -I/usr/local/include/eigen3
-LIBS := -lGL -lGLEW -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
+LIBS := -lGL -lGLEW -lglfw3 -lGLU -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
 EXECUTABLE	:= main
 RM := rm -f
 endif
