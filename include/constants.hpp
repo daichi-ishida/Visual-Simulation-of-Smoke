@@ -7,10 +7,16 @@ enum E_METHOD
     E_MONOTONIC_CUBIC = 1
 };
 
-/* Simulation Constants */
+enum E_ADVECTION
+{
+    E_SEMI_LAGRANGE = 0,
+    E_MAC_CORMACK = 1
+};
+
 constexpr double VOXEL_SIZE = 1.0;
-constexpr int Nx = 50, Ny = 50, Nz = 50;
-constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
+constexpr int Nx = 25, Ny = 50, Nz = 25;
+constexpr E_METHOD INTERPOLATION_METHOD = E_LINEAR;
+constexpr E_ADVECTION ADVECTION_METHOD = E_MAC_CORMACK;
 
 constexpr int SOURCE_SIZE_X = 6;
 constexpr int SOURCE_SIZE_Y = 2;
@@ -19,7 +25,7 @@ constexpr int SOURCE_Y_MERGIN = 4;
 
 constexpr double DT = 0.02;
 constexpr double INIT_DENSITY = 1.0;
-constexpr double INIT_VELOCITY = 60.0;
+constexpr double INIT_VELOCITY = -40.0;
 constexpr double VORT_EPS = 0.25;
 constexpr double ALPHA = 9.8;
 constexpr double BETA = 15.0;
