@@ -15,7 +15,7 @@ void main()
     // diagonal of the cube
     const float maxDist = sqrt(3.0);
  
-    const int numSamples = 128;
+    const int numSamples = 900;
     const float scale = maxDist/float(numSamples);
  
     const int numLightSamples = 32;

@@ -4,13 +4,14 @@
 #include "Camera.hpp"
 #include "constants.hpp"
 
-Camera::Camera() : m_position(glm::vec3(0.0f, 0.0f, 0.0f)),
-                   m_horizontalAngle(0.0),
-                   m_verticalAngle(0.0),
+Camera::Camera() : m_position(glm::vec3(0.0f, 0.0f, 5.0f)),
+                   m_horizontalAngle(M_PI),
+                   m_verticalAngle(0),
                    m_FoV(45.0f),
-                   m_speed(10.0f),
-                   m_mouseSpeed(0.005f)
+                   m_speed(7.0f),
+                   m_mouseSpeed(0.0003f)
 {
+    update();
 }
 
 Camera::~Camera()
@@ -35,11 +36,11 @@ void Camera::update()
     m_horizontalAngle += m_mouseSpeed * float(WIN_WIDTH / 2 - xpos);
     m_verticalAngle += m_mouseSpeed * float(WIN_HEIGHT / 2 - ypos);
     //restrict vertical angle not to be upside down
-    if (-M_PI / 2 > m_verticalAngle)
+    if (m_verticalAngle < -M_PI / 2)
     {
         m_verticalAngle = -M_PI / 2;
     }
-    if (M_PI / 2 < m_verticalAngle)
+    if (m_verticalAngle > M_PI / 2)
     {
         m_verticalAngle = M_PI / 2;
     }
@@ -90,8 +91,8 @@ void Camera::update()
         m_position -= up * deltaTime * m_speed;
     }
 
-    // Projection matrix : 45ｰ Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-    m_projectionMatix = glm::perspective(glm::radians(m_FoV), 4.0f / 4.0f, 0.1f, 100.0f);
+    // Projection matrix : 45ｰ Field of View,  ratio, display range : 0.1 unit <-> 100 units
+    m_projectionMatix = glm::perspective(glm::radians(m_FoV), (float)WIN_WIDTH / (float)WIN_HEIGHT, 0.1f, 100.0f);
 
     // Camera matrix
     m_viewMatrix = glm::lookAt(

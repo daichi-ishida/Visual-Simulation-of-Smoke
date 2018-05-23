@@ -2,7 +2,6 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <string>
 #include <vector>
 
 #define GLFW_INCLUDE_GLU
@@ -18,10 +17,47 @@ Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
     std::string vertex_shader_file = std::string("/home/daichi/Documents/Visual-Simulation-of-Smoke/src/shader/") + "volume.vert";
     std::string fragment_shader_file = std::string("/home/daichi/Documents/Visual-Simulation-of-Smoke/src/shader/") + "volume.frag";
     m_volume = new Volume(m_grids, vertex_shader_file, fragment_shader_file);
+
+    if (SAVE_MOVIE)
+    {
+        std::ostringstream sout;
+        sout << std::setfill('0') << std::setw(3) << std::right << m_file_num;
+        file_name = "output/grids_";
+        switch (ADVECTION_METHOD)
+        {
+        case E_SEMI_LAGRANGE:
+            file_name += "semi_lagrange_";
+            break;
+        case E_MAC_CORMACK:
+            file_name += "mac_cormack_";
+            break;
+        }
+        switch (INTERPOLATION_METHOD)
+        {
+        case E_LINEAR:
+            file_name += "linear_";
+            break;
+        case E_MONOTONIC_CUBIC:
+            file_name += "monotonic_";
+            break;
+        }
+        file_name += sout.str() + ".avi";
+        m_writer = new cv::VideoWriter(file_name, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(WIN_WIDTH, WIN_HEIGHT));
+        if (!m_writer->isOpened())
+        {
+            std::cout << "ERROR : file open error at writing data in .avi format\n"
+                      << file_name << " cannot open" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 Scene::~Scene()
 {
+    if (m_writer)
+    {
+        delete m_writer;
+    }
 }
 
 void Scene::writeData()
@@ -38,6 +74,10 @@ void Scene::update()
 void Scene::render()
 {
     m_volume->draw();
+    if (SAVE_MOVIE)
+    {
+        saveMovie();
+    }
 }
 
 /* private */
@@ -45,15 +85,26 @@ void Scene::writeData_inVtiFormat()
 {
     std::ostringstream sout;
     sout << std::setfill('0') << std::setw(3) << std::right << m_file_num;
-    std::string file_name;
-    if (INTERPOLATION_METHOD == E_LINEAR)
+    file_name = "output/grids_";
+    switch (ADVECTION_METHOD)
     {
-        file_name = "output/grids_linear" + sout.str() + ".vti";
+    case E_SEMI_LAGRANGE:
+        file_name += "semi_lagrange_";
+        break;
+    case E_MAC_CORMACK:
+        file_name += "mac_cormack_";
+        break;
     }
-    else if (INTERPOLATION_METHOD == E_MONOTONIC_CUBIC)
+    switch (INTERPOLATION_METHOD)
     {
-        file_name = "output/grids_monotonic" + sout.str() + ".vti";
+    case E_LINEAR:
+        file_name += "linear_";
+        break;
+    case E_MONOTONIC_CUBIC:
+        file_name += "monotonic_";
+        break;
     }
+    file_name += sout.str() + ".vti";
 
     std::ofstream ofs;
     ofs.open(file_name);
@@ -145,4 +196,20 @@ void Scene::writeData_inVtiFormat()
     ofs << "</VTKFile>" << std::endl;
 
     ofs.close();
+}
+
+void Scene::saveMovie()
+{
+    glReadBuffer(GL_BACK);
+    cv::Mat out_img(cv::Size(WIN_WIDTH, WIN_HEIGHT), CV_8UC3);
+    glReadPixels(0, 0, WIN_WIDTH, WIN_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, out_img.data);
+    cv::flip(out_img, out_img, 0);
+
+    if (out_img.empty())
+    {
+        std::cout << "no image : " << file_name << std::endl;
+        return;
+    }
+
+    *m_writer << out_img;
 }

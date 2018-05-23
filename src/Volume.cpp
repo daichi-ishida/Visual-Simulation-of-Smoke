@@ -130,8 +130,53 @@ Volume::Volume(MACGrid *grids, const std::string &vertex_shader_file, const std:
     glDeleteShader(vertexShaderID);
     glDeleteShader(fragmentShaderID);
 
+    // texture
+    glGenTextures(1, &volumeTexID);
+
+    GLenum target = GL_TEXTURE_3D;
+    GLenum filter = GL_LINEAR;
+    GLenum address = GL_CLAMP_TO_BORDER;
+
+    glBindTexture(target, volumeTexID);
+
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
+
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, address);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, address);
+    glTexParameteri(target, GL_TEXTURE_WRAP_R, address);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    GLubyte *data = new GLubyte[SIZE];
+    GLubyte *ptr = data;
+
+    for (int x = 0; x < Nx; ++x)
+    {
+        for (int y = 0; y < Ny; ++y)
+        {
+            for (int z = 0; z < Nz; ++z)
+            {
+                float f = (float)m_grids->density(x, y, z);
+                *ptr++ = std::max(0, std::min(255, (int)std::floor(f * 256.0)));
+            }
+        }
+    }
+    glTexImage3D(target,
+                 0,
+                 GL_LUMINANCE,
+                 Nx,
+                 Ny,
+                 Nz,
+                 0,
+                 GL_LUMINANCE,
+                 GL_UNSIGNED_BYTE,
+                 data);
+
+    glBindTexture(target, 0);
+
     /* get a handle for uniform */
-    volumeTexID = createPyroclasticVolume(Nx, RADIUS_THRESHOLD);
+    // volumeTexID = createPyroclasticVolume();
     cameraPosID = glGetUniformLocation(programID, "eyePos");
     LightPosID = glGetUniformLocation(programID, "lightPos");
     LightIntensityID = glGetUniformLocation(programID, "lightIntensity");
@@ -168,14 +213,54 @@ void Volume::update()
     glm::mat4 ViewMatrix = m_camera.getViewMat();
     glm::mat4 ModelMatrix = glm::mat4(1.0);
     MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+    GLenum target = GL_TEXTURE_3D;
+    GLenum filter = GL_LINEAR;
+    GLenum address = GL_CLAMP_TO_BORDER;
+    glBindTexture(target, volumeTexID);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
+
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, address);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, address);
+    glTexParameteri(target, GL_TEXTURE_WRAP_R, address);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    GLubyte *data = new GLubyte[SIZE];
+    GLubyte *ptr = data;
+
+    for (int x = 0; x < Nx; ++x)
+    {
+        for (int y = 0; y < Ny; ++y)
+        {
+            for (int z = 0; z < Nz; ++z)
+            {
+                float f = (float)m_grids->density(x, y, z);
+                *ptr++ = std::max(0, std::min(255, (int)std::floor(f * 256.0)));
+            }
+        }
+    }
+    glTexImage3D(target,
+                 0,
+                 GL_LUMINANCE,
+                 Nx,
+                 Ny,
+                 Nz,
+                 0,
+                 GL_LUMINANCE,
+                 GL_UNSIGNED_BYTE,
+                 data);
+
+    glBindTexture(target, 0);
 }
 
 void Volume::draw()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    // glMatrixMode(GL_MODELVIEW);
+    // glLoadIdentity();
 
     // Use our shader
     glUseProgram(programID);
@@ -245,9 +330,8 @@ std::string Volume::ReadFile(const std::string &filename)
     return file_string;
 }
 
-GLuint Volume::createPyroclasticVolume(int n, float r_th)
+GLuint Volume::createPyroclasticVolume()
 {
-
     GLuint texid;
     glGenTextures(1, &texid);
 
@@ -266,11 +350,8 @@ GLuint Volume::createPyroclasticVolume(int n, float r_th)
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    GLbyte *data = new GLbyte[SIZE];
-    GLbyte *ptr = data;
-
-    glm::vec3 frequency = glm::vec3(3.0f / Nx, 3.0f / Ny, 3.0f / Nz);
-    glm::vec3 center = 0.5f * glm::vec3(Nx, Ny, Nz);
+    GLubyte *data = new GLubyte[SIZE];
+    GLubyte *ptr = data;
 
     for (int x = 0; x < Nx; ++x)
     {
@@ -278,18 +359,35 @@ GLuint Volume::createPyroclasticVolume(int n, float r_th)
         {
             for (int z = 0; z < Nz; ++z)
             {
-                glm::vec3 r = glm::vec3(x, y, z);
-                glm::vec3 dr = center - r;
-
-                float off = fabsf(glm::perlin(r, frequency));
-                // float off = 0.0;
-
-                float d = glm::length(dr) / Nx;
-
-                *ptr++ = ((d - off) < r_th) ? 255 : 0;
+                float f = (float)m_grids->density(x, y, z);
+                *ptr++ = std::max(0, std::min(255, (int)std::floor(f * 256.0)));
             }
         }
     }
+
+    // int n = Nx;
+    // float r_th = RADIUS_THRESHOLD;
+    // glm::vec3 frequency = glm::vec3(1.0f / Nx, 5.0f / Ny, 2.0f / Nz);
+    // glm::vec3 center = 0.5f * glm::vec3(Nx, Ny, Nz);
+
+    // for (int x = 0; x < Nx; ++x)
+    // {
+    //     for (int y = 0; y < Ny; ++y)
+    //     {
+    //         for (int z = 0; z < Nz; ++z)
+    //         {
+    //             glm::vec3 r = glm::vec3(x, y, z);
+    //             glm::vec3 dr = center - r;
+
+    //             float off = fabsf(glm::perlin(r * frequency));
+    //             // float off = 0.0;
+
+    //             float d = glm::length(dr) / Nx;
+
+    //             *ptr++ = ((d - off) < r_th) ? 255 : 0;
+    //         }
+    //     }
+    // }
 
     // upload
     glTexImage3D(target,
