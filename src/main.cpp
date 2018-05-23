@@ -49,7 +49,7 @@ int main()
 
     std::cout << "\n*** START SIMULATION ***\n";
 
-    // scene->writeData();
+    scene->writeData();
     scene->render();
 
     while (glfwWindowShouldClose(window) == GL_FALSE && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
@@ -59,8 +59,8 @@ int main()
         time += DT;
         simulator->update();
 
-        // scene->writeData();
         scene->update();
+        scene->writeData();
         scene->render();
         ++step;
 

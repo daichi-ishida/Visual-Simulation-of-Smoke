@@ -234,7 +234,7 @@ void Simulator::advectVelocity()
             pos_u -= DT * vel_u;
             double u_np1_hat = m_grids->getVelocityX(pos_u);
             // backward advection
-            pos_u += m_grids->getVelocity(pos_u);
+            pos_u += DT * m_grids->getVelocity(pos_u);
             double u_n_hat = m_grids->getVelocityX(pos_u);
 
             m_grids->u(i, j, k) = u_np1_hat + 0.5 * (u_n - u_n_hat);
@@ -249,7 +249,7 @@ void Simulator::advectVelocity()
             pos_v -= DT * vel_v;
             double v_np1_hat = m_grids->getVelocityY(pos_v);
             // backward advection
-            pos_v += m_grids->getVelocity(pos_v);
+            pos_v += DT * m_grids->getVelocity(pos_v);
             double v_n_hat = m_grids->getVelocityY(pos_v);
 
             m_grids->v(i, j, k) = v_np1_hat + 0.5 * (v_n - v_n_hat);
@@ -264,7 +264,7 @@ void Simulator::advectVelocity()
             pos_w -= DT * vel_w;
             double w_np1_hat = m_grids->getVelocityZ(pos_w);
             // backward advection
-            pos_w += m_grids->getVelocity(pos_w);
+            pos_w += DT * m_grids->getVelocity(pos_w);
             double w_n_hat = m_grids->getVelocityZ(pos_w);
 
             m_grids->w(i, j, k) = w_np1_hat + 0.5 * (w_n - w_n_hat);
@@ -409,7 +409,7 @@ void Simulator::advectScalar()
             double d_np1_hat = m_grids->getDensity(pos_cell);
             double t_np1_hat = m_grids->getTemperature(pos_cell);
             // backward advection
-            pos_cell += m_grids->getVelocity(pos_cell);
+            pos_cell += DT * m_grids->getVelocity(pos_cell);
             double d_n_hat = m_grids->getDensity(pos_cell);
             double t_n_hat = m_grids->getTemperature(pos_cell);
 
