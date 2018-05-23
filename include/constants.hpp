@@ -14,8 +14,8 @@ enum E_ADVECTION
 };
 
 constexpr double VOXEL_SIZE = 1.0;
-constexpr int Nx = 50, Ny = 50, Nz = 50;
-constexpr E_METHOD INTERPOLATION_METHOD = E_LINEAR;
+constexpr int Nx = 25, Ny = 50, Nz = 25;
+constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
 constexpr E_ADVECTION ADVECTION_METHOD = E_MAC_CORMACK;
 
 constexpr int SOURCE_SIZE_X = 6;
@@ -25,10 +25,10 @@ constexpr int SOURCE_Y_MERGIN = 4;
 
 constexpr double DT = 0.02;
 constexpr double INIT_DENSITY = 1.0;
-constexpr double INIT_VELOCITY = -40.0;
+constexpr double INIT_VELOCITY = 10.0;
 constexpr double VORT_EPS = 0.25;
 constexpr double ALPHA = 9.8;
-constexpr double BETA = 15.0;
+constexpr double BETA = 0.0;
 constexpr double T_AMP = 5.0;
 constexpr double T_AMBIENT = 50.0;
 constexpr double EMIT_DURATION = 1.0;
@@ -47,6 +47,7 @@ constexpr int WIN_WIDTH = 500;
 constexpr int WIN_HEIGHT = 500;
 static const char *WIN_TITLE = "Test";
 constexpr float RADIUS_THRESHOLD = 0.5f;
+constexpr bool SAVE_MOVIE = true;
 
 #ifdef _OPENMP
 #include <omp.h>

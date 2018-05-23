@@ -30,7 +30,7 @@ int main()
         fprintf(stderr, "GLEW initialization failed!\n");
     }
 
-    // set background color black
+    // set background color
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     glEnable(GL_DEPTH_TEST);
@@ -43,28 +43,31 @@ int main()
     double time = 0.0;
     int step = 1;
     MACGrid *grids = new MACGrid();
-    Scene *scene = new Scene(grids);
     Simulator *simulator = new Simulator(grids, time);
+    // simulator->update();
+    Scene *scene = new Scene(grids);
 
     std::cout << "\n*** START SIMULATION ***\n";
 
     // scene->writeData();
-    simulator->update();
+    scene->render();
 
     while (glfwWindowShouldClose(window) == GL_FALSE && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
+    // while (1)
     {
-        // std::cout << "\n=== STEP " << step << " ===\n";
-        // time += DT;
-        // simulator->update();
+        std::cout << "\n=== STEP " << step << " ===\n";
+        time += DT;
+        simulator->update();
+
         // scene->writeData();
         scene->update();
         scene->render();
         ++step;
 
-        // if (time >= FINISH_TIME)
-        // {
-        //     break;
-        // }
+        if (time >= FINISH_TIME)
+        {
+            break;
+        }
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

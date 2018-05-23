@@ -58,7 +58,7 @@ void Simulator::addSource()
     for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
     {
         OPENMP_FOR
-        for (int j = Ny - SOURCE_Y_MERGIN - SOURCE_SIZE_Y; j < Ny - SOURCE_Y_MERGIN; ++j)
+        for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
         {
             OPENMP_FOR
             for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
@@ -76,7 +76,7 @@ void Simulator::setEmitterVelocity()
     for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
     {
         OPENMP_FOR
-        for (int j = Ny - SOURCE_Y_MERGIN - SOURCE_SIZE_Y; j < Ny - SOURCE_Y_MERGIN; ++j)
+        for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
         {
             OPENMP_FOR
             for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
@@ -195,6 +195,8 @@ void Simulator::advectVelocity()
     switch (ADVECTION_METHOD)
     {
     case E_SEMI_LAGRANGE:
+    {
+
         OMP_FOR_EACH_FACE_X
         {
             Vec3 pos_u = m_grids->getCenter(i, j, k) - 0.5 * Vec3(VOXEL_SIZE, 0, 0);
@@ -219,8 +221,10 @@ void Simulator::advectVelocity()
             m_grids->w(i, j, k) = m_grids->getVelocityZ(pos_w);
         }
         break;
+    }
 
     case E_MAC_CORMACK:
+    {
         OMP_FOR_EACH_FACE_X
         {
             double u_n = m_grids->u0(i, j, k);
@@ -266,6 +270,7 @@ void Simulator::advectVelocity()
             m_grids->w(i, j, k) = w_np1_hat + 0.5 * (w_n - w_n_hat);
         }
         break;
+    }
     }
 }
 
@@ -376,12 +381,42 @@ void Simulator::applyPressureTerm()
 
 void Simulator::advectScalar()
 {
-    OMP_FOR_EACH_CELL
+
+    switch (ADVECTION_METHOD)
     {
-        Vec3 pos_cell = m_grids->getCenter(i, j, k);
-        Vec3 vel_cell = m_grids->getVelocity(pos_cell);
-        Vec3 pos0_cell = pos_cell - DT * vel_cell;
-        m_grids->density(i, j, k) = m_grids->getDensity(pos0_cell);
-        m_grids->temperature(i, j, k) = m_grids->getTemperature(pos0_cell);
+    case E_SEMI_LAGRANGE:
+    {
+        OMP_FOR_EACH_CELL
+        {
+            Vec3 pos_cell = m_grids->getCenter(i, j, k);
+            Vec3 vel_cell = m_grids->getVelocity(pos_cell);
+            pos_cell -= DT * vel_cell;
+            m_grids->density(i, j, k) = m_grids->getDensity(pos_cell);
+            m_grids->temperature(i, j, k) = m_grids->getTemperature(pos_cell);
+        }
+        break;
+    }
+    case E_MAC_CORMACK:
+    {
+        OMP_FOR_EACH_CELL
+        {
+            double d_n = m_grids->density(i, j, k);
+            double t_n = m_grids->temperature(i, j, k);
+            Vec3 pos_cell = m_grids->getCenter(i, j, k);
+            Vec3 vel_cell = m_grids->getVelocity(pos_cell);
+            // forward advection
+            pos_cell -= DT * vel_cell;
+            double d_np1_hat = m_grids->getDensity(pos_cell);
+            double t_np1_hat = m_grids->getTemperature(pos_cell);
+            // backward advection
+            pos_cell += m_grids->getVelocity(pos_cell);
+            double d_n_hat = m_grids->getDensity(pos_cell);
+            double t_n_hat = m_grids->getTemperature(pos_cell);
+
+            m_grids->density(i, j, k) = d_np1_hat + 0.5 * (d_n - d_n_hat);
+            m_grids->temperature(i, j, k) = t_np1_hat + 0.5 * (t_n - t_n_hat);
+        }
+        break;
+    }
     }
 }

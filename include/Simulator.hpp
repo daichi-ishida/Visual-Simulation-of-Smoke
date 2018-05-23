@@ -19,8 +19,8 @@ public:
 private:
   void setEmitterVelocity();
   void addSource();
+
   void resetForce();
-  void avgVelocity();
   void calVorticity();
   void addForce();
   void advectVelocity();

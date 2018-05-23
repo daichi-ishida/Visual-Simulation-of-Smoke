@@ -3,9 +3,9 @@ BUILD_TYPE := Release
 OUTPUT_DIR := output
 
 CXX_DEBUG_FLAGS := -g -O0 -Wall
-CXX_RELEASE_FLAGS := -s -O2 -fopenmp
+CXX_RELEASE_FLAGS := -s -O2 
 
-CXXFLAGS := -MMD -MP -std=gnu++14
+CXXFLAGS := -MMD -MP -std=gnu++14 -fopenmp 
 BINDIR := bin
 SRCDIR := src
 OBJDIR := obj
@@ -24,8 +24,9 @@ LIBS := -LC:/MinGW/lib
 EXECUTABLE	:= main.exe
 RM := cmd //C del
 else
-INCLUDE	+= -I/usr/local/include/eigen3
+INCLUDE	+= -I/usr/local/include/eigen3 
 LIBS := -lGL -lGLEW -lglfw3 -lGLU -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
+LIBS += -lopencv_core -lopencv_videoio -lopencv_highgui
 EXECUTABLE	:= main
 RM := rm -f
 endif
