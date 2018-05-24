@@ -13,10 +13,17 @@ enum E_ADVECTION
     E_MAC_CORMACK = 1
 };
 
+enum E_EMITTER_POS
+{
+    E_TOP = 0,
+    E_BOTTOM = 1
+};
+
 constexpr double VOXEL_SIZE = 1.0;
 constexpr int Nx = 25, Ny = 50, Nz = 25;
 constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
 constexpr E_ADVECTION ADVECTION_METHOD = E_MAC_CORMACK;
+constexpr E_EMITTER_POS EMITTER_POS = E_BOTTOM;
 
 constexpr int SOURCE_SIZE_X = 6;
 constexpr int SOURCE_SIZE_Y = 2;
@@ -28,10 +35,10 @@ constexpr double INIT_DENSITY = 1.0;
 constexpr double INIT_VELOCITY = 80.0;
 constexpr double VORT_EPS = 0.25;
 constexpr double ALPHA = 9.8;
-constexpr double BETA = 3.0;
+constexpr double BETA = 15.0;
 constexpr double T_AMP = 5.0;
 constexpr double T_AMBIENT = 50.0;
-constexpr double EMIT_DURATION = 2.0;
+constexpr double EMIT_DURATION = 1.0;
 constexpr double FINISH_TIME = 6.0;
 
 constexpr int SIZE = Nx * Ny * Nz;

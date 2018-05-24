@@ -1,5 +1,3 @@
-#include <iostream>
-
 #define GLFW_INCLUDE_GLU
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -47,7 +45,7 @@ int main()
     Simulator *simulator = new Simulator(grids, time);
     Scene *scene = new Scene(grids);
 
-    std::cout << "\n*** START SIMULATION ***\n";
+    printf("\n*** START SIMULATION ***\n");
 
     // scene->writeData();
     scene->render();
@@ -55,7 +53,7 @@ int main()
     while (glfwWindowShouldClose(window) == GL_FALSE && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
     // while (1)
     {
-        std::cout << "\n=== STEP " << step << " ===\n";
+        printf("\n=== STEP %d ===\n", step);
         time += DT;
         simulator->update();
 
@@ -72,7 +70,7 @@ int main()
         glfwPollEvents();
     }
 
-    std::cout << "\n*** END ***\n";
+    printf("\n*** END ***\n");
 
     if (simulator)
     {

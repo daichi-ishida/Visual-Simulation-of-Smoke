@@ -7,7 +7,7 @@ Simulator::Simulator(MACGrid *grids, double &time) : m_grids(grids), m_time(time
 {
     // nnz size is estimated by 7*SIZE because there are 7 nnz elements in a row.(center and neighbor 6)
     tripletList.reserve(7 * SIZE);
-    ICCG.setTolerance(0.00001);
+    ICCG.setTolerance(1e-6);
 
     /*set temperature */
     // std::random_device rnd;
@@ -54,37 +54,87 @@ void Simulator::update()
 /* private */
 void Simulator::addSource()
 {
-    OPENMP_FOR
-    for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
+    switch (EMITTER_POS)
+    {
+    case E_TOP:
     {
         OPENMP_FOR
-        for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
+        for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
         {
             OPENMP_FOR
-            for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
+            for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
             {
-                m_grids->density(i, j, k) = INIT_DENSITY;
+                OPENMP_FOR
+                for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
+                {
+                    m_grids->density(i, j, k) = INIT_DENSITY;
+                }
             }
         }
+        break;
+    }
+
+    case E_BOTTOM:
+    {
+        OPENMP_FOR
+        for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
+        {
+            OPENMP_FOR
+            for (int j = Ny - SOURCE_SIZE_Y - SOURCE_Y_MERGIN; j < Ny - SOURCE_Y_MERGIN; ++j)
+            {
+                OPENMP_FOR
+                for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
+                {
+                    m_grids->density(i, j, k) = INIT_DENSITY;
+                }
+            }
+        }
+        break;
+    }
     }
 }
 
 void Simulator::setEmitterVelocity()
 {
-    /* set emitter velocity */
-    OPENMP_FOR
-    for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
+    switch (EMITTER_POS)
+    {
+    case E_TOP:
     {
         OPENMP_FOR
-        for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
+        for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
         {
             OPENMP_FOR
-            for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
+            for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
             {
-                m_grids->v(i, j, k) = INIT_VELOCITY;
-                m_grids->v0(i, j, k) = m_grids->v(i, j, k);
+                OPENMP_FOR
+                for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
+                {
+                    m_grids->v(i, j, k) = INIT_VELOCITY;
+                    m_grids->v0(i, j, k) = m_grids->v(i, j, k);
+                }
             }
         }
+        break;
+    }
+
+    case E_BOTTOM:
+    {
+        OPENMP_FOR
+        for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
+        {
+            OPENMP_FOR
+            for (int j = Ny - SOURCE_SIZE_Y - SOURCE_Y_MERGIN; j < Ny - SOURCE_Y_MERGIN; ++j)
+            {
+                OPENMP_FOR
+                for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
+                {
+                    m_grids->v(i, j, k) = -INIT_VELOCITY;
+                    m_grids->v0(i, j, k) = m_grids->v(i, j, k);
+                }
+            }
+        }
+        break;
+    }
     }
 }
 
