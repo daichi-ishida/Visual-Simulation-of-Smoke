@@ -14,6 +14,9 @@ public:
 
   void update();
 
+  void GridViewControll();
+  void FPScontroll();
+
   glm::vec3 getPos();
   glm::mat4 getProjectionMat();
   glm::mat4 getViewMat();
