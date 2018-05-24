@@ -215,7 +215,7 @@ void Scene::saveMovie()
 {
     glReadBuffer(GL_BACK);
     cv::Mat out_img(cv::Size(WIN_WIDTH, WIN_HEIGHT), CV_8UC3);
-    glReadPixels(0, 0, WIN_WIDTH, WIN_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, out_img.data);
+    glReadPixels(0, 0, WIN_WIDTH, WIN_HEIGHT, GL_BGR, GL_UNSIGNED_BYTE, out_img.data);
     cv::flip(out_img, out_img, 0);
 
     if (out_img.empty())

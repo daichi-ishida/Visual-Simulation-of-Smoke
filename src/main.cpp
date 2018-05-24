@@ -30,14 +30,12 @@ int main()
 
     // set background color
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glLineWidth(2.0f);
+    glLineWidth(1.2f);
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
     glEnable(GL_TEXTURE_3D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     double time = 0.0;
     int step = 1;

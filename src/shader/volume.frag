@@ -13,12 +13,12 @@ out vec4 color;
 void main()
 {
     // diagonal of the cube
-    const float maxDist = sqrt(3.0);
+    const float maxDist = sqrt(16.0);
  
-    const int numSamples = 900;
+    const int numSamples = 1024;
     const float scale = maxDist/float(numSamples);
  
-    const int numLightSamples = 32;
+    const int numLightSamples = 256;
     const float lscale = maxDist / float(numLightSamples);
  
     // assume all coordinates are in texture space
@@ -34,15 +34,15 @@ void main()
     {
         // sample density
         float density = texture(densityTex, pos).x;
-        // tester = vec3(density);
         // skip empty space
         if (density > 0.0)
         {
             // attenuate ray-throughput
-            T *= 1.0-density*scale*absorption;
+            T *= 1.0 - density*scale*absorption;
             if (T <= 0.01)
+            {
                 break;
- 
+            }
             // point light dir in texture space
             vec3 lightDir = normalize(lightPos-pos)*lscale;
  
@@ -70,5 +70,5 @@ void main()
     }
  
     color.xyz = Lo;
-    color.w = 1.0-T;
+    color.w = 1.0 - T;
 }

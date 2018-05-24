@@ -4,10 +4,10 @@
 #include "Camera.hpp"
 #include "constants.hpp"
 
-Camera::Camera() : m_r(7.0f * Nx * MAGNIFICATION),
-                   m_horizontalAngle(3 * (float)M_PI / 8.0f),
-                   m_verticalAngle((float)M_PI / 2.0f),
-                   m_FoV(45.0f),
+Camera::Camera() : m_r(9.0f * Nx * MAGNIFICATION),
+                   m_horizontalAngle(1.0f * M_PI / 8.0f),
+                   m_verticalAngle(M_PI / 2.0f),
+                   m_FoV(30.0f),
                    m_speed(10.0f),
                    m_mouseSpeed(0.0003f)
 {
@@ -27,9 +27,9 @@ void Camera::update()
 void Camera::GridViewControll()
 {
     glm::vec3 center = glm::vec3(0, 0, 0);
-    m_position = glm::vec3(m_r * std::sin(m_verticalAngle) * std::cos(m_horizontalAngle),
-                           m_r * std::cos(m_verticalAngle),
-                           m_r * std::sin(m_verticalAngle) * std::sin(m_horizontalAngle));
+    m_position = glm::vec3(m_r * std::sin(m_verticalAngle) * std::sin(m_horizontalAngle),
+                           -m_r * std::cos(m_verticalAngle),
+                           m_r * std::sin(m_verticalAngle) * std::cos(m_horizontalAngle));
     m_currentTime = glfwGetTime();
     float deltaTime = m_currentTime - m_lastTime;
 
@@ -48,26 +48,35 @@ void Camera::GridViewControll()
     // Strafe right
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        m_horizontalAngle += deltaTime * m_speed / (m_r * std::sin(m_verticalAngle));
+        m_horizontalAngle -= deltaTime * m_speed / (m_r * std::sin(m_verticalAngle));
     }
     // Strafe left
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        m_horizontalAngle -= deltaTime * m_speed / (m_r * std::sin(m_verticalAngle));
+        m_horizontalAngle += deltaTime * m_speed / (m_r * std::sin(m_verticalAngle));
     }
     //move up
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     {
-        m_verticalAngle += deltaTime * m_speed / m_r;
+        m_verticalAngle -= deltaTime * m_speed / m_r;
     }
     //move down
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
     {
-        m_verticalAngle -= deltaTime * m_speed / m_r;
+        m_verticalAngle += deltaTime * m_speed / m_r;
+    }
+    //restrict vertical angle
+    if (m_verticalAngle > M_PI)
+    {
+        m_verticalAngle = M_PI;
+    }
+    else if (m_verticalAngle < 0)
+    {
+        m_verticalAngle = 0;
     }
 
-    glm::vec3 right = glm::vec3(-std::sin(m_horizontalAngle), 0, std::cos(m_horizontalAngle));
-    glm::vec3 up = glm::cross(right, -m_position);
+    glm::vec3 right = glm::vec3(std::cos(m_horizontalAngle), 0, -std::sin(m_horizontalAngle));
+    glm::vec3 up = glm::cross(-right, -m_position);
 
     // Projection matrix : 45ｰ Field of View,  ratio, display range : 0.1 unit <-> 100 units
     m_projectionMatix = glm::perspective(glm::radians(m_FoV), (float)WIN_WIDTH / (float)WIN_HEIGHT, 0.1f, 1000.0f);

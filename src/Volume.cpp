@@ -227,8 +227,11 @@ Volume::~Volume()
 void Volume::update()
 {
     cameraPos = m_camera->getPos();
-    lightPos = glm::vec3(0, 5.0f * (float)Ny * MAGNIFICATION, 5.0f * (float)Nz * MAGNIFICATION);
-    lightIntensity = glm::vec3(2.0f, 2.0f, 2.0f);
+    float r = 7.0f * Nx * MAGNIFICATION;
+
+    lightPos = glm::vec3(0.0f, -r, 0.0f);
+    lightIntensity = 1.0f * glm::vec3(1.74f, 1.46f, 1.00f);
+    // lightIntensity = glm::vec3(1.0f);
 
     // matrix
     glm::mat4 ProjectionMatrix = m_camera->getProjectionMat();
