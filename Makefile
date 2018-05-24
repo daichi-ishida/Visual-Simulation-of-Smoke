@@ -17,19 +17,11 @@ SRCS := $(wildcard $(SRCDIR)/*.cpp)
 OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS:.cpp=.o)))
 DEPS := $(OBJS:.o=.d)
 
-ifeq ($(OS),Windows_NT)
-EIGEN_PATH := C:/Libraries/eigen
-INCLUDE	+= -IC:/MinGW/include -I$(EIGEN_PATH)
-LIBS := -LC:/MinGW/lib
-EXECUTABLE	:= main.exe
-RM := cmd //C del
-else
 INCLUDE	+= -I/usr/local/include/eigen3 
 LIBS := -lGL -lGLEW -lglfw3 -lGLU -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
 LIBS += -lopencv_core -lopencv_videoio -lopencv_highgui
 EXECUTABLE	:= main
 RM := rm -f
-endif
 
 ifeq ($(BUILD_TYPE),Release)
 	CXXFLAGS += $(CXX_RELEASE_FLAGS)
