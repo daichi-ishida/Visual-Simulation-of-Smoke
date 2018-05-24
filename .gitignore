@@ -4,5 +4,6 @@ bin/
 obj/
 pdfs/
 
+*.avi
 *.vti
 *.mp4
