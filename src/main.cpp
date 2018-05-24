@@ -31,25 +31,25 @@ int main()
     }
 
     // set background color
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glLineWidth(2.0f);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_TEXTURE_3D);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     double time = 0.0;
     int step = 1;
     MACGrid *grids = new MACGrid();
     Simulator *simulator = new Simulator(grids, time);
-    // simulator->update();
     Scene *scene = new Scene(grids);
 
     std::cout << "\n*** START SIMULATION ***\n";
 
-    scene->writeData();
+    // scene->writeData();
     scene->render();
 
     while (glfwWindowShouldClose(window) == GL_FALSE && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
@@ -60,7 +60,7 @@ int main()
         simulator->update();
 
         scene->update();
-        scene->writeData();
+        // scene->writeData();
         scene->render();
         ++step;
 

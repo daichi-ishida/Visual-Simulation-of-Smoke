@@ -8,6 +8,7 @@
 #include "MACGrid.hpp"
 #include "Volume.hpp"
 #include "Camera.hpp"
+#include "Wireframe.hpp"
 
 class Scene
 {
@@ -26,7 +27,9 @@ private:
 
   int m_file_num;
   MACGrid *m_grids;
+  Camera *m_camera;
   Volume *m_volume;
+  Wireframe *m_wireframe;
 
   cv::VideoWriter *m_writer;
   std::string file_name;

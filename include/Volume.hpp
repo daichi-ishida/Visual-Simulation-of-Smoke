@@ -14,7 +14,7 @@
 class Volume
 {
 public:
-  Volume(MACGrid *grids, const std::string &vertex_shader_file, const std::string &fragment_shader_file);
+  Volume(MACGrid *grids, Camera *camera);
   ~Volume();
 
   void update();
@@ -24,7 +24,7 @@ private:
   std::string ReadFile(const std::string &filename);
 
   MACGrid *m_grids;
-  Camera m_camera;
+  Camera *m_camera;
 
   // ID
   GLuint programID;

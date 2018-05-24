@@ -30,6 +30,7 @@ private:
   float m_lastTime;
   float m_currentTime;
 
+  float m_r;
   float m_horizontalAngle;
   float m_verticalAngle;
   float m_FoV;

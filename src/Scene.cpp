@@ -14,9 +14,9 @@
 
 Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
 {
-    std::string vertex_shader_file = std::string("/home/daichi/Documents/Visual-Simulation-of-Smoke/src/shader/") + "volume.vert";
-    std::string fragment_shader_file = std::string("/home/daichi/Documents/Visual-Simulation-of-Smoke/src/shader/") + "volume.frag";
-    m_volume = new Volume(m_grids, vertex_shader_file, fragment_shader_file);
+    m_camera = new Camera();
+    m_volume = new Volume(m_grids, m_camera);
+    m_wireframe = new Wireframe(m_camera);
 
     if (SAVE_MOVIE)
     {
@@ -58,6 +58,18 @@ Scene::~Scene()
     {
         delete m_writer;
     }
+    if (m_wireframe)
+    {
+        delete m_wireframe;
+    }
+    if (m_volume)
+    {
+        delete m_volume;
+    }
+    if (m_camera)
+    {
+        delete m_camera;
+    }
 }
 
 void Scene::writeData()
@@ -68,12 +80,15 @@ void Scene::writeData()
 
 void Scene::update()
 {
+    m_camera->update();
     m_volume->update();
+    m_wireframe->update();
 }
 
 void Scene::render()
 {
     m_volume->draw();
+    m_wireframe->draw();
     if (SAVE_MOVIE)
     {
         saveMovie();
