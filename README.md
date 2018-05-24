@@ -9,6 +9,7 @@ Libraries you need are
 - GLM
 - GLEW
 - GLFW
+- OpenCV (3.1.0)
 
 You can build and execute following command.
 
@@ -18,11 +19,7 @@ $ make
 $ make run
 ```
 
-When you run this program, simulation result is written to the "output" directory as VTK format.
-
-So to visualize this result, you need **ParaView**.
-
-https://www.paraview.org/
+When you run this program, simulation result is written to the "output" directory as AVI video format.
 
 ## Screenshot
 
