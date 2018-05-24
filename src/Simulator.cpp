@@ -1,6 +1,5 @@
 #include <cmath>
 #include <random>
-#include <iostream>
 #include "Simulator.hpp"
 
 Simulator::Simulator(MACGrid *grids, double &time) : m_grids(grids), m_time(time), A(SIZE, SIZE), b(SIZE), x(SIZE)
@@ -392,15 +391,15 @@ void Simulator::calPressure()
     ICCG.compute(A);
     if (ICCG.info() == Eigen::Success)
     {
-        std::cout << "SUCCESS: Convergence" << std::endl;
+        printf("SUCCESS: Convergence\n");
     }
     else
     {
-        std::cout << "FAILED: No Convergence" << std::endl;
+        fprintf(stderr, "FAILED: No Convergence\n");
     }
     x = ICCG.solve(b);
-    std::cout << "#iterations:     " << ICCG.iterations() << std::endl;
-    std::cout << "estimated error: " << ICCG.error() << std::endl;
+    printf("#iterations:     %d \n", ICCG.iterations());
+    printf("estimated error: %e \n", ICCG.error());
 
     Eigen::Map<Eigen::VectorXd>(m_grids->pressure.getScalarPtr(), SIZE) = x;
 }

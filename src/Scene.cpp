@@ -1,4 +1,3 @@
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -43,8 +42,7 @@ Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
         m_writer = new cv::VideoWriter(file_name, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(WIN_WIDTH, WIN_HEIGHT));
         if (!m_writer->isOpened())
         {
-            std::cout << "ERROR : file open error at writing data in .avi format\n"
-                      << file_name << " cannot open" << std::endl;
+            fprintf(stderr, "ERROR : file open error at writing data in .avi format\n %s cannot open\n", file_name.c_str());
             exit(EXIT_FAILURE);
         }
     }
@@ -123,8 +121,7 @@ void Scene::writeData_inVtiFormat()
     ofs.open(file_name);
     if (!ofs)
     {
-        std::cout << "ERROR : file open error at writing data in .vti format\n"
-                  << file_name << " cannot open" << std::endl;
+        fprintf(stderr, "ERROR : file open error at writing data in .vti format\n %s cannot open\n", file_name.c_str());
         exit(EXIT_FAILURE);
     }
 
@@ -220,7 +217,7 @@ void Scene::saveMovie()
 
     if (out_img.empty())
     {
-        std::cout << "no image : " << file_name << std::endl;
+        fprintf(stderr, "ERROR : no image %s \n", file_name.c_str());
         return;
     }
 
