@@ -20,8 +20,6 @@ Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
 
     if (SAVE_MOVIE)
     {
-        std::ostringstream sout;
-        sout << std::setfill('0') << std::setw(3) << std::right << m_file_num;
         file_name = "output/grids_";
         switch (ADVECTION_METHOD)
         {
@@ -41,7 +39,7 @@ Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
             file_name += "monotonic_";
             break;
         }
-        file_name += sout.str() + ".avi";
+        file_name += ".avi";
         m_writer = new cv::VideoWriter(file_name, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(WIN_WIDTH, WIN_HEIGHT));
         if (!m_writer->isOpened())
         {
