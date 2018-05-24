@@ -9,7 +9,7 @@
 Volume::Volume(MACGrid *grids, const std::string &vertex_shader_file, const std::string &fragment_shader_file) : m_grids(grids), m_camera()
 {
     /* domain cube */
-    const float vertices[8][3] = {
+    float vertices[8][3] = {
         {-1.0f, -1.0f, -1.0f},
         {1.0f, -1.0f, -1.0f},
         {-1.0f, 1.0f, -1.0f},
@@ -19,9 +19,25 @@ Volume::Volume(MACGrid *grids, const std::string &vertex_shader_file, const std:
         {1.0f, -1.0f, 1.0f},
         {1.0f, 1.0f, 1.0f}};
 
+    const float texcoord[8][3] = {
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f},
+        {1.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 1.0f},
+        {1.0f, 0.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f}};
+
     const unsigned int indices[12][3] = {
         {3, 5, 7}, {3, 7, 6}, {1, 6, 7}, {1, 7, 4}, {0, 1, 4}, {0, 4, 2}, {0, 2, 5}, {0, 5, 3}, {2, 5, 7}, {2, 7, 4}, {0, 1, 6}, {0, 6, 3}};
 
+    for (int i = 0; i < 8; ++i)
+    {
+        vertices[i][0] *= (float)Nx * MAGNIFICATION;
+        vertices[i][1] *= (float)Ny * MAGNIFICATION;
+        vertices[i][2] *= (float)Nz * MAGNIFICATION;
+    }
     // generate VAO
     glGenVertexArrays(1, &m_vertex_array_object);
     // set current VAO
@@ -31,6 +47,10 @@ Volume::Volume(MACGrid *grids, const std::string &vertex_shader_file, const std:
     glGenBuffers(1, &m_vertex_buffer_object);
     glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer_object);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &m_texture_buffer_object);
+    glBindBuffer(GL_ARRAY_BUFFER, m_texture_buffer_object);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoord), texcoord, GL_STATIC_DRAW);
 
     // generate index buffer
     glGenBuffers(1, &m_index_buffer_object);
@@ -185,7 +205,7 @@ Volume::Volume(MACGrid *grids, const std::string &vertex_shader_file, const std:
 
     lightPos = glm::vec3(0, 4, 4);
     lightIntensity = glm::vec3(1.0f, 1.0f, 1.0f);
-    absorption = 0.8f;
+    absorption = ABSORPTION;
     glm::mat4 ProjectionMatrix = m_camera.getProjectionMat();
     glm::mat4 ViewMatrix = m_camera.getViewMat();
     glm::mat4 ModelMatrix = glm::mat4(1.0);
@@ -205,8 +225,8 @@ void Volume::update()
 {
     m_camera.update();
     cameraPos = m_camera.getPos();
-    lightPos = glm::vec3(0, 4, 4);
-    lightIntensity = glm::vec3(1.0f, 1.0f, 1.0f);
+    lightPos = glm::vec3(0, 5.0f * (float)Ny / 4.0f, 5.0f * (float)Nz / 4.0f);
+    lightIntensity = glm::vec3(0.5f, 0.5f, 0.5f);
 
     // matrix
     glm::mat4 ProjectionMatrix = m_camera.getProjectionMat();
@@ -289,17 +309,17 @@ void Volume::draw()
         0,        // stride
         (void *)0 // array buffer offset
     );
-    // // 2nd attribute buffer : texcoords
-    // glEnableVertexAttribArray(0);
-    // glBindBuffer(GL_ARRAY_BUFFER, m_texture_buffer_object);
-    // glVertexAttribPointer(
-    //     1,        // attribute
-    //     3,        // size
-    //     GL_FLOAT, // type
-    //     GL_FALSE, // normalized?
-    //     0,        // stride
-    //     (void *)0 // array buffer offset
-    // );
+    // 2nd attribute buffer : texcoords
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, m_texture_buffer_object);
+    glVertexAttribPointer(
+        1,        // attribute
+        3,        // size
+        GL_FLOAT, // type
+        GL_FALSE, // normalized?
+        0,        // stride
+        (void *)0 // array buffer offset
+    );
 
     // Index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_object);
@@ -313,6 +333,7 @@ void Volume::draw()
     );
 
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
     glBindTexture(GL_TEXTURE_3D, 0);
     glUseProgram(0);
 }
@@ -328,81 +349,4 @@ std::string Volume::ReadFile(const std::string &filename)
     std::istreambuf_iterator<char> ifs_end;
     std::string file_string(ifs_begin, ifs_end);
     return file_string;
-}
-
-GLuint Volume::createPyroclasticVolume()
-{
-    GLuint texid;
-    glGenTextures(1, &texid);
-
-    GLenum target = GL_TEXTURE_3D;
-    GLenum filter = GL_LINEAR;
-    GLenum address = GL_CLAMP_TO_BORDER;
-
-    glBindTexture(target, texid);
-
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
-
-    glTexParameteri(target, GL_TEXTURE_WRAP_S, address);
-    glTexParameteri(target, GL_TEXTURE_WRAP_T, address);
-    glTexParameteri(target, GL_TEXTURE_WRAP_R, address);
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    GLubyte *data = new GLubyte[SIZE];
-    GLubyte *ptr = data;
-
-    for (int x = 0; x < Nx; ++x)
-    {
-        for (int y = 0; y < Ny; ++y)
-        {
-            for (int z = 0; z < Nz; ++z)
-            {
-                float f = (float)m_grids->density(x, y, z);
-                *ptr++ = std::max(0, std::min(255, (int)std::floor(f * 256.0)));
-            }
-        }
-    }
-
-    // int n = Nx;
-    // float r_th = RADIUS_THRESHOLD;
-    // glm::vec3 frequency = glm::vec3(1.0f / Nx, 5.0f / Ny, 2.0f / Nz);
-    // glm::vec3 center = 0.5f * glm::vec3(Nx, Ny, Nz);
-
-    // for (int x = 0; x < Nx; ++x)
-    // {
-    //     for (int y = 0; y < Ny; ++y)
-    //     {
-    //         for (int z = 0; z < Nz; ++z)
-    //         {
-    //             glm::vec3 r = glm::vec3(x, y, z);
-    //             glm::vec3 dr = center - r;
-
-    //             float off = fabsf(glm::perlin(r * frequency));
-    //             // float off = 0.0;
-
-    //             float d = glm::length(dr) / Nx;
-
-    //             *ptr++ = ((d - off) < r_th) ? 255 : 0;
-    //         }
-    //     }
-    // }
-
-    // upload
-    glTexImage3D(target,
-                 0,
-                 GL_LUMINANCE,
-                 Nx,
-                 Ny,
-                 Nz,
-                 0,
-                 GL_LUMINANCE,
-                 GL_UNSIGNED_BYTE,
-                 data);
-
-    glBindTexture(target, 0);
-    delete[] data;
-
-    return texid;
 }

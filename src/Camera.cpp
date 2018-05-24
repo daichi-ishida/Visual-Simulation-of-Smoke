@@ -4,7 +4,7 @@
 #include "Camera.hpp"
 #include "constants.hpp"
 
-Camera::Camera() : m_position(glm::vec3(0.0f, 0.0f, 5.0f)),
+Camera::Camera() : m_position(glm::vec3(0.0f, 0.0f, 4.0f * (float)Nz / 3.0f)),
                    m_horizontalAngle(M_PI),
                    m_verticalAngle(0),
                    m_FoV(45.0f),
@@ -58,7 +58,7 @@ void Camera::update()
         std::cos(m_horizontalAngle - M_PI / 2.0f));
 
     // Up vector
-    glm::vec3 up = glm::cross(right, direction); //up vector which is perpendicular to right and direction , by definition
+    glm::vec3 up = glm::cross(-right, direction); //up vector which is perpendicular to right and direction , by definition
 
     // Move forward
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)

@@ -22,7 +22,6 @@ public:
 
 private:
   std::string ReadFile(const std::string &filename);
-  GLuint createPyroclasticVolume();
 
   MACGrid *m_grids;
   Camera m_camera;
