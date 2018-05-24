@@ -173,11 +173,11 @@ Volume::Volume(MACGrid *grids, Camera *camera) : m_grids(grids), m_camera(camera
     GLubyte *data = new GLubyte[SIZE];
     GLubyte *ptr = data;
 
-    for (int x = 0; x < Nx; ++x)
+    for (int z = 0; z < Nz; ++z)
     {
         for (int y = 0; y < Ny; ++y)
         {
-            for (int z = 0; z < Nz; ++z)
+            for (int x = 0; x < Nx; ++x)
             {
                 float f = (float)m_grids->density(x, y, z);
                 *ptr++ = std::max(0, std::min(255, (int)std::floor(f * 256.0)));
@@ -217,6 +217,7 @@ Volume::Volume(MACGrid *grids, Camera *camera) : m_grids(grids), m_camera(camera
 Volume::~Volume()
 {
     glDeleteBuffers(1, &m_index_buffer_object);
+    glDeleteBuffers(1, &m_texture_buffer_object);
     glDeleteBuffers(1, &m_vertex_buffer_object);
     glDeleteVertexArrays(1, &m_vertex_array_object);
 
