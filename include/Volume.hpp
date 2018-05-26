@@ -21,6 +21,8 @@ public:
   void draw();
 
 private:
+  void setShader();
+  void setVAO();
   std::string ReadFile(const std::string &filename);
 
   MACGrid *m_grids;
