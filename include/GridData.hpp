@@ -20,11 +20,12 @@ protected:
   int sign(double a);
   int constrainIndex(int idx, int N);
 
-private:
-  double scalar[Nx * Ny * Nz];
   int maxNx;
   int maxNy;
   int maxNz;
+
+private:
+  double scalar[Nx * Ny * Nz];
 };
 
 class GridDataX : public GridData
@@ -37,9 +38,6 @@ public:
 
 private:
   double mU[(Nx + 1) * Ny * Nz];
-  int maxNx;
-  int maxNy;
-  int maxNz;
 };
 
 class GridDataY : public GridData
@@ -52,9 +50,6 @@ public:
 
 private:
   double mV[Nx * (Ny + 1) * Nz];
-  int maxNx;
-  int maxNy;
-  int maxNz;
 };
 
 class GridDataZ : public GridData
@@ -67,7 +62,4 @@ public:
 
 private:
   double mW[Nx * Ny * (Nz + 1)];
-  int maxNx;
-  int maxNy;
-  int maxNz;
 };

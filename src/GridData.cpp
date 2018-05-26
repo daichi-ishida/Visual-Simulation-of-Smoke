@@ -168,7 +168,10 @@ int GridData::constrainIndex(int idx, int N)
 }
 
 /* GridDataX */
-GridDataX::GridDataX() : GridData(), maxNx(Nx), maxNy(Ny - 1), maxNz(Nz - 1), mU() {}
+GridDataX::GridDataX() : GridData(), mU()
+{
+    GridData::maxNx = Nx;
+}
 GridDataX::~GridDataX() {}
 double &GridDataX::operator()(int i, int j, int k)
 {
@@ -177,7 +180,10 @@ double &GridDataX::operator()(int i, int j, int k)
 }
 
 /* GridDataY */
-GridDataY::GridDataY() : GridData(), maxNx(Nx - 1), maxNy(Ny), maxNz(Nz - 1), mV() {}
+GridDataY::GridDataY() : GridData(), mV()
+{
+    GridData::maxNy = Ny;
+}
 GridDataY::~GridDataY() {}
 double &GridDataY::operator()(int i, int j, int k)
 {
@@ -186,7 +192,10 @@ double &GridDataY::operator()(int i, int j, int k)
 }
 
 /* GridDataZ */
-GridDataZ::GridDataZ() : GridData(), maxNx(Nx - 1), maxNy(Ny - 1), maxNz(Nz), mW() {}
+GridDataZ::GridDataZ() : GridData(), mW()
+{
+    GridData::maxNz = Nz;
+}
 GridDataZ::~GridDataZ() {}
 double &GridDataZ::operator()(int i, int j, int k)
 {

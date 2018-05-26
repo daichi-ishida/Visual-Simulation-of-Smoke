@@ -12,20 +12,14 @@ Simulator::Simulator(MACGrid *grids, double &time) : m_grids(grids), m_time(time
     // std::random_device rnd;
     // std::mt19937 engine(rnd());
     // std::uniform_real_distribution<double> dist(0, T_AMP);
-    OPENMP_FOR
-    for (int k = 0; k < Nz; ++k)
+
+    OPENMP_FOR_COLLAPSE
+    FOR_EACH_CELL
     {
-        OPENMP_FOR
-        for (int j = 0; j < Ny; ++j)
-        {
-            OPENMP_FOR
-            for (int i = 0; i < Nx; ++i)
-            {
-                m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
-                // m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
-            }
-        }
+        m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
+        // m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
     }
+
     addSource();
     setEmitterVelocity();
 }
@@ -57,13 +51,11 @@ void Simulator::addSource()
     {
     case E_TOP:
     {
-        OPENMP_FOR
+        OPENMP_FOR_COLLAPSE
         for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
         {
-            OPENMP_FOR
             for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
             {
-                OPENMP_FOR
                 for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
                 {
                     m_grids->density(i, j, k) = INIT_DENSITY;
@@ -75,13 +67,11 @@ void Simulator::addSource()
 
     case E_BOTTOM:
     {
-        OPENMP_FOR
+        OPENMP_FOR_COLLAPSE
         for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
         {
-            OPENMP_FOR
             for (int j = Ny - SOURCE_SIZE_Y - SOURCE_Y_MERGIN; j < Ny - SOURCE_Y_MERGIN; ++j)
             {
-                OPENMP_FOR
                 for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
                 {
                     m_grids->density(i, j, k) = INIT_DENSITY;
@@ -99,13 +89,11 @@ void Simulator::setEmitterVelocity()
     {
     case E_TOP:
     {
-        OPENMP_FOR
+        OPENMP_FOR_COLLAPSE
         for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
         {
-            OPENMP_FOR
             for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
             {
-                OPENMP_FOR
                 for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
                 {
                     m_grids->v(i, j, k) = INIT_VELOCITY;
@@ -118,13 +106,11 @@ void Simulator::setEmitterVelocity()
 
     case E_BOTTOM:
     {
-        OPENMP_FOR
+        OPENMP_FOR_COLLAPSE
         for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
         {
-            OPENMP_FOR
             for (int j = Ny - SOURCE_SIZE_Y - SOURCE_Y_MERGIN; j < Ny - SOURCE_Y_MERGIN; ++j)
             {
-                OPENMP_FOR
                 for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
                 {
                     m_grids->v(i, j, k) = -INIT_VELOCITY;
@@ -139,8 +125,8 @@ void Simulator::setEmitterVelocity()
 
 void Simulator::resetForce()
 {
-
-    OMP_FOR_EACH_CELL
+    OPENMP_FOR_COLLAPSE
+    FOR_EACH_CELL
     {
         m_grids->fx[POS(i, j, k)] = 0.0;
         m_grids->fy[POS(i, j, k)] = ALPHA * m_grids->density(i, j, k) - BETA * (m_grids->temperature(i, j, k) - T_AMBIENT);
@@ -150,13 +136,16 @@ void Simulator::resetForce()
 
 void Simulator::calVorticity()
 {
-    OMP_FOR_EACH_CELL
+    OPENMP_FOR_COLLAPSE
+    FOR_EACH_CELL
     {
         m_grids->avg_u[POS(i, j, k)] = (m_grids->u(i, j, k) + m_grids->u(i + 1, j, k)) * 0.5;
         m_grids->avg_v[POS(i, j, k)] = (m_grids->v(i, j, k) + m_grids->v(i, j + 1, k)) * 0.5;
         m_grids->avg_w[POS(i, j, k)] = (m_grids->w(i, j, k) + m_grids->w(i, j, k + 1)) * 0.5;
     }
-    OMP_FOR_EACH_CELL
+
+    OPENMP_FOR_COLLAPSE
+    FOR_EACH_CELL
     {
         // ignore boundary cells
         if (i == 0 || j == 0 || k == 0)
@@ -173,7 +162,8 @@ void Simulator::calVorticity()
         m_grids->omg_z[POS(i, j, k)] = (m_grids->avg_v[POS(i + 1, j, k)] - m_grids->avg_v[POS(i - 1, j, k)] - m_grids->avg_u[POS(i, j + 1, k)] + m_grids->avg_u[POS(i, j - 1, k)]) * 0.5 / VOXEL_SIZE;
     }
 
-    OMP_FOR_EACH_CELL
+    OPENMP_FOR_COLLAPSE
+    FOR_EACH_CELL
     {
         // ignore boundary cells
         if (i == 0 || j == 0 || k == 0)
@@ -218,7 +208,8 @@ void Simulator::calVorticity()
 
 void Simulator::addForce()
 {
-    OMP_FOR_EACH_CELL
+    OPENMP_FOR_COLLAPSE
+    FOR_EACH_CELL
     {
         if (i < Nx - 1)
         {
@@ -245,8 +236,8 @@ void Simulator::advectVelocity()
     {
     case E_SEMI_LAGRANGE:
     {
-
-        OMP_FOR_EACH_FACE_X
+        OPENMP_FOR_COLLAPSE
+        FOR_EACH_FACE_X
         {
             Vec3 pos_u = m_grids->getCenter(i, j, k) - 0.5 * Vec3(VOXEL_SIZE, 0, 0);
             Vec3 vel_u = m_grids->getVelocity(pos_u);
@@ -254,7 +245,8 @@ void Simulator::advectVelocity()
             m_grids->u(i, j, k) = m_grids->getVelocityX(pos_u);
         }
 
-        OMP_FOR_EACH_FACE_Y
+        OPENMP_FOR_COLLAPSE
+        FOR_EACH_FACE_Y
         {
             Vec3 pos_v = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, VOXEL_SIZE, 0);
             Vec3 vel_v = m_grids->getVelocity(pos_v);
@@ -262,7 +254,8 @@ void Simulator::advectVelocity()
             m_grids->v(i, j, k) = m_grids->getVelocityY(pos_v);
         }
 
-        OMP_FOR_EACH_FACE_Z
+        OPENMP_FOR_COLLAPSE
+        FOR_EACH_FACE_Z
         {
             Vec3 pos_w = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, 0, VOXEL_SIZE);
             Vec3 vel_w = m_grids->getVelocity(pos_w);
@@ -274,7 +267,8 @@ void Simulator::advectVelocity()
 
     case E_MAC_CORMACK:
     {
-        OMP_FOR_EACH_FACE_X
+        OPENMP_FOR_COLLAPSE
+        FOR_EACH_FACE_X
         {
             double u_n = m_grids->u0(i, j, k);
             Vec3 pos_u = m_grids->getCenter(i, j, k) - 0.5 * Vec3(VOXEL_SIZE, 0, 0);
@@ -288,8 +282,8 @@ void Simulator::advectVelocity()
 
             m_grids->u(i, j, k) = u_np1_hat + 0.5 * (u_n - u_n_hat);
         }
-
-        OMP_FOR_EACH_FACE_Y
+        OPENMP_FOR_COLLAPSE
+        FOR_EACH_FACE_Y
         {
             double v_n = m_grids->v0(i, j, k);
             Vec3 pos_v = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, VOXEL_SIZE, 0);
@@ -304,7 +298,8 @@ void Simulator::advectVelocity()
             m_grids->v(i, j, k) = v_np1_hat + 0.5 * (v_n - v_n_hat);
         }
 
-        OMP_FOR_EACH_FACE_Z
+        OPENMP_FOR_COLLAPSE
+        FOR_EACH_FACE_Z
         {
             double w_n = m_grids->w0(i, j, k);
             Vec3 pos_w = m_grids->getCenter(i, j, k) - 0.5 * Vec3(0, 0, VOXEL_SIZE);
@@ -332,7 +327,7 @@ void Simulator::calPressure()
 
     double coeff = VOXEL_SIZE / DT;
 
-#pragma omp parallel for ordered
+#pragma omp parallel for collapse(3) ordered
     FOR_EACH_CELL
     {
         double F[6] = {k > 0, j > 0, i > 0, i < Nx - 1, j < Ny - 1, k < Nz - 1};
@@ -406,7 +401,8 @@ void Simulator::calPressure()
 
 void Simulator::applyPressureTerm()
 {
-    OMP_FOR_EACH_CELL
+    OPENMP_FOR_COLLAPSE
+    FOR_EACH_CELL
     {
         // compute gradient of pressure
         if (i < Nx - 1)
@@ -435,7 +431,8 @@ void Simulator::advectScalar()
     {
     case E_SEMI_LAGRANGE:
     {
-        OMP_FOR_EACH_CELL
+        OPENMP_FOR_COLLAPSE
+        FOR_EACH_CELL
         {
             Vec3 pos_cell = m_grids->getCenter(i, j, k);
             Vec3 vel_cell = m_grids->getVelocity(pos_cell);
@@ -447,7 +444,8 @@ void Simulator::advectScalar()
     }
     case E_MAC_CORMACK:
     {
-        OMP_FOR_EACH_CELL
+        OPENMP_FOR_COLLAPSE
+        FOR_EACH_CELL
         {
             double d_n = m_grids->density(i, j, k);
             double t_n = m_grids->temperature(i, j, k);

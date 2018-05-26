@@ -3,26 +3,6 @@
 #include "constants.hpp"
 #include "GridData.hpp"
 
-#define OMP_FOR_EACH_CELL                       \
-    OPENMP_FOR for (int k = 0; k < Nz; ++k)     \
-        OPENMP_FOR for (int j = 0; j < Ny; ++j) \
-            OPENMP_FOR for (int i = 0; i < Nx; ++i)
-
-#define OMP_FOR_EACH_FACE_X                     \
-    OPENMP_FOR for (int k = 0; k < Nz; ++k)     \
-        OPENMP_FOR for (int j = 0; j < Ny; ++j) \
-            OPENMP_FOR for (int i = 0; i < Nx + 1; ++i)
-
-#define OMP_FOR_EACH_FACE_Y                         \
-    OPENMP_FOR for (int k = 0; k < Nz; ++k)         \
-        OPENMP_FOR for (int j = 0; j < Ny + 1; ++j) \
-            OPENMP_FOR for (int i = 0; i < Nx; ++i)
-
-#define OMP_FOR_EACH_FACE_Z                     \
-    OPENMP_FOR for (int k = 0; k < Nz + 1; ++k) \
-        OPENMP_FOR for (int j = 0; j < Ny; ++j) \
-            OPENMP_FOR for (int i = 0; i < Nx; ++i)
-
 #define FOR_EACH_CELL                \
     for (int k = 0; k < Nz; ++k)     \
         for (int j = 0; j < Ny; ++j) \
