@@ -1,65 +1,38 @@
 #pragma once
+#include <array>
 #include "constants.hpp"
 #include "Vec3.hpp"
 
+template <int X, int Y, int Z>
 class GridData
 {
 public:
   GridData();
   ~GridData();
 
-  virtual double &operator()(int i, int j, int k);
-  virtual double *getScalarPtr();
+  double &operator()(int i, int j, int k);
+  double *begin();
+  double *end();
 
   double interp(const Vec3 &pt);
 
-protected:
+private:
   double linearInterpolation(const Vec3 &pt);
   double monotonicCubicInterpolation(const Vec3 &pt);
-  double axis_monotonicCubicInterpolation(double f[], double fract);
-  int sign(double a);
-  int constrainIndex(int idx, int N);
+  double axis_monotonicCubicInterpolation(const double f[], const double t) const;
+  int sign(const double a) const;
+  int constrainIndex(const int idx, const int N) const;
 
-  int maxNx;
-  int maxNy;
-  int maxNz;
+  const int maxNx;
+  const int maxNy;
+  const int maxNz;
 
-private:
-  double scalar[Nx * Ny * Nz];
+  std::array<double, X * Y * Z> m_data;
 };
 
-class GridDataX : public GridData
-{
-public:
-  GridDataX();
-  virtual ~GridDataX();
+#include "../src/GridData.cpp"
 
-  double &operator()(int i, int j, int k) override;
-
-private:
-  double mU[(Nx + 1) * Ny * Nz];
-};
-
-class GridDataY : public GridData
-{
-public:
-  GridDataY();
-  virtual ~GridDataY();
-
-  double &operator()(int i, int j, int k) override;
-
-private:
-  double mV[Nx * (Ny + 1) * Nz];
-};
-
-class GridDataZ : public GridData
-{
-public:
-  GridDataZ();
-  virtual ~GridDataZ();
-
-  double &operator()(int i, int j, int k) override;
-
-private:
-  double mW[Nx * Ny * (Nz + 1)];
-};
+using GridDataScalar = GridData<Nx, Ny, Nz>;
+using GridDataX = GridData<Nx + 1, Ny, Nz>;
+using GridDataY = GridData<Nx, Ny + 1, Nz>;
+using GridDataZ = GridData<Nx, Ny, Nz + 1>;

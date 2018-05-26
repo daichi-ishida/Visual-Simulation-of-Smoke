@@ -223,11 +223,10 @@ void Simulator::addForce()
         {
             m_grids->w(i, j, k + 1) += DT * (m_grids->fz[POS(i, j, k)] + m_grids->fz[POS(i, j, k + 1)]) * 0.5;
         }
-
-        m_grids->u0(i, j, k) = m_grids->u(i, j, k);
-        m_grids->v0(i, j, k) = m_grids->v(i, j, k);
-        m_grids->w0(i, j, k) = m_grids->w(i, j, k);
     }
+    std::copy(m_grids->u.begin(), m_grids->u.end(), m_grids->u0.begin());
+    std::copy(m_grids->v.begin(), m_grids->v.end(), m_grids->v0.begin());
+    std::copy(m_grids->w.begin(), m_grids->w.end(), m_grids->w0.begin());
 }
 
 void Simulator::advectVelocity()
@@ -396,7 +395,7 @@ void Simulator::calPressure()
     printf("#iterations:     %d \n", ICCG.iterations());
     printf("estimated error: %e \n", ICCG.error());
 
-    Eigen::Map<Eigen::VectorXd>(m_grids->pressure.getScalarPtr(), SIZE) = x;
+    Eigen::Map<Eigen::VectorXd>(m_grids->pressure.begin(), SIZE) = x;
 }
 
 void Simulator::applyPressureTerm()
@@ -417,11 +416,10 @@ void Simulator::applyPressureTerm()
         {
             m_grids->w(i, j, k + 1) -= DT * (m_grids->pressure(i, j, k + 1) - m_grids->pressure(i, j, k)) / VOXEL_SIZE;
         }
-
-        m_grids->u0(i, j, k) = m_grids->u(i, j, k);
-        m_grids->v0(i, j, k) = m_grids->v(i, j, k);
-        m_grids->w0(i, j, k) = m_grids->w(i, j, k);
     }
+    std::copy(m_grids->u.begin(), m_grids->u.end(), m_grids->u0.begin());
+    std::copy(m_grids->v.begin(), m_grids->v.end(), m_grids->v0.begin());
+    std::copy(m_grids->w.begin(), m_grids->w.end(), m_grids->w0.begin());
 }
 
 void Simulator::advectScalar()
