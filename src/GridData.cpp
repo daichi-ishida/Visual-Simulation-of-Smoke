@@ -1,23 +1,36 @@
+#pragma once
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include "GridData.hpp"
 
 /* GridData */
-GridData::GridData() : scalar(), maxNx(Nx - 1), maxNy(Ny - 1), maxNz(Nz - 1) {}
-GridData::~GridData() {}
-double &GridData::operator()(int i, int j, int k)
+template <int X, int Y, int Z>
+GridData<X, Y, Z>::GridData() : m_data(), maxNx(X - 1), maxNy(Y - 1), maxNz(Z - 1) {}
+
+template <int X, int Y, int Z>
+GridData<X, Y, Z>::~GridData() {}
+
+template <int X, int Y, int Z>
+double &GridData<X, Y, Z>::operator()(int i, int j, int k)
 {
-    assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));
-    return scalar[i + Nx * j + Nx * Ny * k];
+    assert((i >= 0 || i < X) || (j >= 0 || j < Y) || (k >= 0 || k < Z));
+    return m_data[i + X * j + X * Y * k];
 }
 
-double *GridData::getScalarPtr()
+template <int X, int Y, int Z>
+double *GridData<X, Y, Z>::begin()
 {
-    return scalar;
+    return m_data.begin();
 }
 
-double GridData::interp(const Vec3 &pt)
+template <int X, int Y, int Z>
+double *GridData<X, Y, Z>::end()
+{
+    return m_data.end();
+}
+
+template <int X, int Y, int Z>
+double GridData<X, Y, Z>::interp(const Vec3 &pt)
 {
     switch (INTERPOLATION_METHOD)
     {
@@ -28,7 +41,8 @@ double GridData::interp(const Vec3 &pt)
     }
 }
 
-double GridData::linearInterpolation(const Vec3 &pt)
+template <int X, int Y, int Z>
+double GridData<X, Y, Z>::linearInterpolation(const Vec3 &pt)
 {
     Vec3 pos;
     // clamp position
@@ -83,7 +97,8 @@ double GridData::linearInterpolation(const Vec3 &pt)
     return tmp;
 }
 
-double GridData::monotonicCubicInterpolation(const Vec3 &pt)
+template <int X, int Y, int Z>
+double GridData<X, Y, Z>::monotonicCubicInterpolation(const Vec3 &pt)
 {
     Vec3 pos;
     // clamp position
@@ -128,7 +143,8 @@ double GridData::monotonicCubicInterpolation(const Vec3 &pt)
     return axis_monotonicCubicInterpolation(arr_z, fractz);
 }
 
-double GridData::axis_monotonicCubicInterpolation(double f[], double t)
+template <int X, int Y, int Z>
+double GridData<X, Y, Z>::axis_monotonicCubicInterpolation(const double f[], const double t) const
 {
     // f[0]:f_k-1, f[1]:f_k, f[2]:f_k+1, f[3]:f_k+2
     double delta = f[2] - f[1];
@@ -146,7 +162,8 @@ double GridData::axis_monotonicCubicInterpolation(double f[], double t)
     return a3 * t * t * t + a2 * t * t + a1 * t + a0;
 }
 
-int GridData::sign(double a)
+template <int X, int Y, int Z>
+int GridData<X, Y, Z>::sign(const double a) const
 {
     // if a is positive, return 1
     // if a is negative, return -1
@@ -154,7 +171,8 @@ int GridData::sign(double a)
     return (a > 0) - (a < 0);
 }
 
-int GridData::constrainIndex(int idx, int N)
+template <int X, int Y, int Z>
+int GridData<X, Y, Z>::constrainIndex(const int idx, const int N) const
 {
     if (idx == -1)
     {
@@ -165,31 +183,4 @@ int GridData::constrainIndex(int idx, int N)
         return N;
     }
     return idx;
-}
-
-/* GridDataX */
-GridDataX::GridDataX() : GridData(), maxNx(Nx), maxNy(Ny - 1), maxNz(Nz - 1), mU() {}
-GridDataX::~GridDataX() {}
-double &GridDataX::operator()(int i, int j, int k)
-{
-    assert((i >= 0 || i <= Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));
-    return mU[i + (Nx + 1) * j + (Nx + 1) * Ny * k];
-}
-
-/* GridDataY */
-GridDataY::GridDataY() : GridData(), maxNx(Nx - 1), maxNy(Ny), maxNz(Nz - 1), mV() {}
-GridDataY::~GridDataY() {}
-double &GridDataY::operator()(int i, int j, int k)
-{
-    assert((i >= 0 || i < Nx) || (j >= 0 || j <= Ny) || (k >= 0 || k < Nz));
-    return mV[i + Nx * j + Nx * (Ny + 1) * k];
-}
-
-/* GridDataZ */
-GridDataZ::GridDataZ() : GridData(), maxNx(Nx - 1), maxNy(Ny - 1), maxNz(Nz), mW() {}
-GridDataZ::~GridDataZ() {}
-double &GridDataZ::operator()(int i, int j, int k)
-{
-    assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k <= Nz));
-    return mW[i + Nx * j + Nx * Ny * k];
 }

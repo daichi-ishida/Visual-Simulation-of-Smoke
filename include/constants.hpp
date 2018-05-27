@@ -61,16 +61,8 @@ constexpr bool SAVE_MOVIE = true;
 #ifdef _OPENMP
 #include <omp.h>
 #define OPENMP_FOR _Pragma("omp parallel for")
-#define OPENMP_SECTION _Pragma("omp section")
-#define OPENMP_BEGIN        \
-    _Pragma("omp parallel") \
-    {
-#define OPENMP_END }
-#define OPENMP_FOR_P _Pragma("omp for")
+#define OPENMP_FOR_COLLAPSE _Pragma("omp parallel for collapse(3)")
 #else
 #define OPENMP_FOR
-#define OPENMP_SECTION
-#define OPENMP_BEGIN
-#define OPENMP_END
-#define OPENMP_FOR_P
+#define OPENMP_FOR_COLLAPSE
 #endif
