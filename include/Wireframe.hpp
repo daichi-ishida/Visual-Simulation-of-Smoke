@@ -12,29 +12,32 @@
 
 class Wireframe
 {
-  public:
-    Wireframe(Camera *camera);
-    ~Wireframe();
+public:
+  Wireframe();
+  ~Wireframe();
 
-    void update();
-    void draw();
+  void initialize();
 
-  private:
-    std::string ReadFile(const std::string &filename);
+  void update();
+  void draw() const;
 
-    Camera *m_camera;
+  GLuint getProgramID() const;
+  GLuint getVaoID() const;
+  GLuint getMatrixID() const;
 
-    // ID
-    GLuint programID;
-    GLuint vertexShaderID;
-    GLuint fragmentShaderID;
+private:
+  void initVAO();
+  void initShaders();
 
-    GLuint MatrixID;
+  std::string ReadFile(const std::string &filename);
 
-    // data
-    glm::mat4 MVP;
+  // ID
+  GLuint vaoID;
+  GLuint vboID;
+  GLuint indexID;
+  GLuint programID;
+  GLuint vertexShaderID;
+  GLuint fragmentShaderID;
 
-    GLuint m_vertex_array_object;
-    GLuint m_vertex_buffer_object;
-    GLuint m_index_buffer_object;
+  GLuint MatrixID;
 };

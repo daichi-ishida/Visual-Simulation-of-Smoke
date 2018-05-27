@@ -13,9 +13,7 @@
 
 Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
 {
-    m_camera = new Camera();
-    m_volume = new Volume(m_grids, m_camera);
-    m_wireframe = new Wireframe(m_camera);
+    initialize();
 
     if (SAVE_MOVIE)
     {
@@ -68,14 +66,21 @@ Scene::~Scene()
     }
 }
 
-void Scene::writeData()
+void Scene::initialize()
 {
-    writeData_inVtiFormat();
-    ++m_file_num;
+    m_camera = new Camera();
+    m_volume = new Volume(m_grids);
+    m_wireframe = new Wireframe();
 }
 
 void Scene::update()
 {
+    float r = 7.0f * Nx * MAGNIFICATION;
+
+    lightPos = glm::vec3(0.0f, -r, 0.0f);
+    lightIntensity = 1.0f * glm::vec3(1.74f, 1.46f, 1.00f);
+    // lightIntensity = glm::vec3(1.0f);
+
     m_camera->update();
     m_volume->update();
     m_wireframe->update();
@@ -83,12 +88,50 @@ void Scene::update()
 
 void Scene::render()
 {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glm::vec3 cameraPos = m_camera->getPos();
+    GLuint programID = 0;
+
+    /* --- draw volume --- */
+    programID = m_volume->getProgramID();
+    glUseProgram(programID);
+    glBindVertexArray(m_volume->getVaoID());
+
+    glUniform3f(m_volume->getLightPosID(), lightPos.x, lightPos.y, lightPos.z);
+    glUniform3f(m_volume->getLightIntensityID(), lightIntensity.x, lightIntensity.y, lightIntensity.z);
+    glUniform3f(m_volume->getCamPosID(), cameraPos.x, cameraPos.y, cameraPos.z);
+    glUniformMatrix4fv(m_volume->getMatrixID(), 1, GL_FALSE, &(m_camera->getMVP())[0][0]);
+
     m_volume->draw();
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+    /* --- end --- */
+
+    /* --- draw wireframe --- */
+    programID = m_wireframe->getProgramID();
+    glUseProgram(programID);
+    glBindVertexArray(m_wireframe->getVaoID());
+
+    glUniformMatrix4fv(m_wireframe->getMatrixID(), 1, GL_FALSE, &(m_camera->getMVP())[0][0]);
+
     m_wireframe->draw();
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+    /* --- end --- */
+
     if (SAVE_MOVIE)
     {
         saveMovie();
     }
+}
+
+void Scene::writeData()
+{
+    writeData_inVtiFormat();
+    ++m_file_num;
 }
 
 /* private */

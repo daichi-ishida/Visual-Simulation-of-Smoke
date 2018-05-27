@@ -184,12 +184,7 @@ glm::vec3 Camera::getPos()
     return m_position;
 }
 
-glm::mat4 Camera::getProjectionMat()
+glm::mat4 Camera::getMVP()
 {
-    return m_projectionMatix;
-}
-
-glm::mat4 Camera::getViewMat()
-{
-    return m_viewMatrix;
+    return m_MVP;
 }

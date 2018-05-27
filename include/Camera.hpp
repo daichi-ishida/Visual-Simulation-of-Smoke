@@ -18,8 +18,7 @@ public:
   void FPScontroll();
 
   glm::vec3 getPos();
-  glm::mat4 getProjectionMat();
-  glm::mat4 getViewMat();
+  glm::mat4 getMVP();
 
 private:
   glm::vec3 m_position;

@@ -16,16 +16,20 @@ public:
   Scene(MACGrid *grids);
   ~Scene();
 
-  void writeData();
-
+  void initialize();
   void update();
   void render();
+
+  void writeData();
 
 private:
   void writeData_inVtiFormat();
   void saveMovie();
 
   int m_file_num;
+  glm::vec3 lightPos;
+  glm::vec3 lightIntensity;
+
   MACGrid *m_grids;
   Camera *m_camera;
   Volume *m_volume;

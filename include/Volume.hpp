@@ -14,41 +14,46 @@
 class Volume
 {
 public:
-  Volume(MACGrid *grids, Camera *camera);
+  Volume(MACGrid *grids);
   ~Volume();
 
+  void initialize();
+
   void update();
-  void draw();
+  void draw() const;
+
+  GLuint getProgramID() const;
+  GLuint getVaoID() const;
+  GLuint getCamPosID() const;
+  GLuint getLightPosID() const;
+  GLuint getLightIntensityID() const;
+  GLuint getMatrixID() const;
 
 private:
-  void setShader();
-  void setVAO();
+  void initVAO();
+  void initShaders();
+
   std::string ReadFile(const std::string &filename);
 
   MACGrid *m_grids;
-  Camera *m_camera;
 
   // ID
+  GLuint vaoID;
+  GLuint vboID;
+  GLuint textureID;
+  GLuint indexID;
   GLuint programID;
   GLuint vertexShaderID;
   GLuint fragmentShaderID;
 
   GLuint volumeTexID;
+
   GLuint cameraPosID;
   GLuint LightPosID;
   GLuint LightIntensityID;
-  GLuint absorptionID;
   GLuint MatrixID;
+  GLuint absorptionID;
 
   // data
-  glm::vec3 cameraPos;
-  glm::vec3 lightPos;
-  glm::vec3 lightIntensity;
   float absorption;
-  glm::mat4 MVP;
-
-  GLuint m_vertex_array_object;
-  GLuint m_vertex_buffer_object;
-  GLuint m_texture_buffer_object;
-  GLuint m_index_buffer_object;
 };
