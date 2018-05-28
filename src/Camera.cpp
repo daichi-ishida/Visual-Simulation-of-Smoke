@@ -88,6 +88,8 @@ void Camera::GridViewControll()
         up          // Head is up (set to 0,-1,0 to look upside-down)
     );
 
+    m_MVP = m_projectionMatix * m_viewMatrix;
+
     // For the next frame, the "last time" will be "now"
     m_lastTime = glfwGetTime();
 }
