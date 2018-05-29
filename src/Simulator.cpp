@@ -52,11 +52,11 @@ void Simulator::addSource()
     case E_TOP:
     {
         OPENMP_FOR_COLLAPSE
-        for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
+        for (int k = (Nz - SOURCE_SIZE_Z) / 2; k < (Nz + SOURCE_SIZE_Z) / 2; ++k)
         {
             for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
             {
-                for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
+                for (int i = (Nx - SOURCE_SIZE_X) / 2; i < (Nx + SOURCE_SIZE_X) / 2; ++i)
                 {
                     m_grids->density(i, j, k) = INIT_DENSITY;
                 }
@@ -68,11 +68,11 @@ void Simulator::addSource()
     case E_BOTTOM:
     {
         OPENMP_FOR_COLLAPSE
-        for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
+        for (int k = (Nz - SOURCE_SIZE_Z) / 2; k < (Nz + SOURCE_SIZE_Z) / 2; ++k)
         {
-            for (int j = Ny - SOURCE_SIZE_Y - SOURCE_Y_MERGIN; j < Ny - SOURCE_Y_MERGIN; ++j)
+            for (int j = Ny - SOURCE_Y_MERGIN - SOURCE_SIZE_Y; j < Ny - SOURCE_Y_MERGIN; ++j)
             {
-                for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
+                for (int i = (Nx - SOURCE_SIZE_X) / 2; i < (Nx + SOURCE_SIZE_X) / 2; ++i)
                 {
                     m_grids->density(i, j, k) = INIT_DENSITY;
                 }
@@ -90,11 +90,11 @@ void Simulator::setEmitterVelocity()
     case E_TOP:
     {
         OPENMP_FOR_COLLAPSE
-        for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
+        for (int k = (Nz - SOURCE_SIZE_Z) / 2; k < (Nz + SOURCE_SIZE_Z) / 2; ++k)
         {
             for (int j = SOURCE_Y_MERGIN; j < SOURCE_Y_MERGIN + SOURCE_SIZE_Y; ++j)
             {
-                for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
+                for (int i = (Nx - SOURCE_SIZE_X) / 2; i < (Nx + SOURCE_SIZE_X) / 2; ++i)
                 {
                     m_grids->v(i, j, k) = INIT_VELOCITY;
                     m_grids->v0(i, j, k) = m_grids->v(i, j, k);
@@ -107,11 +107,11 @@ void Simulator::setEmitterVelocity()
     case E_BOTTOM:
     {
         OPENMP_FOR_COLLAPSE
-        for (int k = Nz / 2 - SOURCE_SIZE_Z / 2; k < Nz / 2 + SOURCE_SIZE_Z / 2 + 1; ++k)
+        for (int k = (Nz - SOURCE_SIZE_Z) / 2; k < (Nz + SOURCE_SIZE_Z) / 2; ++k)
         {
-            for (int j = Ny - SOURCE_SIZE_Y - SOURCE_Y_MERGIN; j < Ny - SOURCE_Y_MERGIN; ++j)
+            for (int j = Ny - SOURCE_Y_MERGIN - SOURCE_SIZE_Y; j < Ny - SOURCE_Y_MERGIN + 1; ++j)
             {
-                for (int i = Nx / 2 - SOURCE_SIZE_X / 2; i < Nx / 2 + SOURCE_SIZE_X / 2 + 1; ++i)
+                for (int i = (Nx - SOURCE_SIZE_X) / 2; i < (Nx + SOURCE_SIZE_X) / 2; ++i)
                 {
                     m_grids->v(i, j, k) = -INIT_VELOCITY;
                     m_grids->v0(i, j, k) = m_grids->v(i, j, k);

@@ -26,9 +26,9 @@ constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
 constexpr E_ADVECTION ADVECTION_METHOD = E_MAC_CORMACK;
 constexpr E_EMITTER_POS EMITTER_POS = E_BOTTOM;
 
-constexpr int SOURCE_SIZE_X = 6 * RESOLUTION;
+constexpr int SOURCE_SIZE_X = 7 * RESOLUTION;
 constexpr int SOURCE_SIZE_Y = 2 * RESOLUTION;
-constexpr int SOURCE_SIZE_Z = 6 * RESOLUTION;
+constexpr int SOURCE_SIZE_Z = 7 * RESOLUTION;
 constexpr int SOURCE_Y_MERGIN = 4 * RESOLUTION;
 
 constexpr double DT = 0.02;
@@ -56,7 +56,7 @@ constexpr int WIN_HEIGHT = 500;
 constexpr float MAGNIFICATION = 0.2f;
 static const char *WIN_TITLE = "Visual Simulation of Smoke";
 constexpr float ABSORPTION = 2.0f;
-constexpr bool SAVE_MOVIE = true;
+constexpr bool SAVE_MOVIE = false;
 
 #ifdef _OPENMP
 #include <omp.h>
