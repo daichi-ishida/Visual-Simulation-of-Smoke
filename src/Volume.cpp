@@ -7,6 +7,11 @@
 Volume::Volume(MACGrid *grids) : m_grids(grids)
 {
     initialize();
+    GLenum error_code = glGetError();
+    if (error_code != GL_NO_ERROR)
+    {
+        fprintf(stderr, "volume initialize error!\n");
+    }
 }
 
 Volume::~Volume()
@@ -25,6 +30,7 @@ void Volume::update()
     GLenum filter = GL_LINEAR;
     GLenum address = GL_CLAMP_TO_BORDER;
     glBindTexture(target, volumeTexID);
+
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
 
@@ -50,12 +56,12 @@ void Volume::update()
     }
     glTexImage3D(target,
                  0,
-                 GL_LUMINANCE,
+                 GL_RED,
                  Nx,
                  Ny,
                  Nz,
                  0,
-                 GL_LUMINANCE,
+                 GL_RED,
                  GL_UNSIGNED_BYTE,
                  data);
 
@@ -64,12 +70,14 @@ void Volume::update()
 
 void Volume::draw() const
 {
-
+    GLenum error_code;
     glUniform1f(absorptionID, absorption);
 
     // Bind volume texture in Texture Unit 0
     glActiveTexture(GL_TEXTURE0);
+
     glBindTexture(GL_TEXTURE_3D, volumeTexID);
+
     glUniform1i(volumeTexID, 0);
 
     // Draw the triangles !

@@ -10,11 +10,14 @@
 
 int main()
 {
-    if (glfwInit() == GL_FALSE)
+    if (glfwInit() == GLFW_FALSE)
     {
         fprintf(stderr, "Initialization failed!\n");
     }
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     GLFWwindow *window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, WIN_TITLE,
                                           NULL, NULL);
     if (window == NULL)
@@ -23,6 +26,7 @@ int main()
         glfwTerminate();
     }
     glfwMakeContextCurrent(window);
+    glewExperimental = true;
     if (glewInit() != GLEW_OK)
     {
         fprintf(stderr, "GLEW initialization failed!\n");
@@ -45,7 +49,6 @@ int main()
     printf("\n*** START SIMULATION ***\n");
 
     // scene->writeData();
-    scene->render();
 
     while (glfwWindowShouldClose(window) == GL_FALSE && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
     // while (1)
