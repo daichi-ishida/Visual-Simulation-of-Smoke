@@ -3,11 +3,6 @@
 #include <iomanip>
 #include <vector>
 
-#define GLFW_INCLUDE_GLU
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-
 #include "Scene.hpp"
 #include "constants.hpp"
 

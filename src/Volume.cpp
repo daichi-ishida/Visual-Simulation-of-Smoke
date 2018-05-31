@@ -69,10 +69,7 @@ void Volume::draw() const
 
     // Bind volume texture in Texture Unit 0
     glActiveTexture(GL_TEXTURE0);
-
     glBindTexture(GL_TEXTURE_3D, volumeTexID);
-
-    glUniform1i(volumeTexID, 0);
 
     // Draw the triangles !
     glDrawElements(

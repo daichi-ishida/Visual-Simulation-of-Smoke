@@ -1,6 +1,11 @@
 #pragma once
 #include <string>
 
+#define GLFW_INCLUDE_GLU
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/videoio.hpp>
