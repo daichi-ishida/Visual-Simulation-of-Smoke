@@ -7,11 +7,6 @@
 Volume::Volume(MACGrid *grids) : m_grids(grids)
 {
     initialize();
-    GLenum error_code = glGetError();
-    if (error_code != GL_NO_ERROR)
-    {
-        fprintf(stderr, "volume initialize error!\n");
-    }
 }
 
 Volume::~Volume()
@@ -70,7 +65,6 @@ void Volume::update()
 
 void Volume::draw() const
 {
-    GLenum error_code;
     glUniform1f(absorptionID, absorption);
 
     // Bind volume texture in Texture Unit 0

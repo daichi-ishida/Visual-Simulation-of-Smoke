@@ -18,7 +18,7 @@ OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS:.cpp=.o)))
 DEPS := $(OBJS:.o=.d)
 
 INCLUDE	+= -I/usr/local/include/eigen3 
-LIBS := -lGL -lGLEW -lglfw3 -lX11 -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
+LIBS := -lGL -lGLEW -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
 LIBS += -lopencv_core -lopencv_videoio -lopencv_highgui
 EXECUTABLE	:= main
 RM := rm -f
