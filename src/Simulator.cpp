@@ -424,6 +424,8 @@ void Simulator::applyPressureTerm()
 
 void Simulator::advectScalar()
 {
+    std::copy(m_grids->density.begin(), m_grids->density.end(), m_grids->density0.begin());
+    std::copy(m_grids->temperature.begin(), m_grids->temperature.end(), m_grids->temperature0.begin());
 
     switch (ADVECTION_METHOD)
     {

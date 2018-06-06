@@ -42,6 +42,7 @@ class MACGrid
     GridDataX u, u0;
     GridDataY v, v0;
     GridDataZ w, w0;
+    GridDataScalar density0, temperature0;
     GridDataScalar density, temperature, pressure;
     double avg_u[SIZE], avg_v[SIZE], avg_w[SIZE];
     double omg_x[SIZE], omg_y[SIZE], omg_z[SIZE], vort[SIZE];
