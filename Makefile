@@ -1,5 +1,4 @@
 HOST_COMPILER		:= g++
-CUDA_PATH			:= /usr/local/cuda-9.1
 BUILD_TYPE			:= Release
 
 TARGET				:= main
@@ -10,8 +9,7 @@ TARGETDIR			:= bin
 OUTPUTDIR			:= output
 
 # extensions
-CPPEXT				:= cpp
-CUDAEXT				:= cu
+SRCEXT				:= cpp
 DEPEXT				:= d
 OBJEXT				:= o
 
@@ -37,8 +35,8 @@ else
 	$(error buildtype must be release, debug, profile or coverage)
 endif
 
-sources			:= $(shell find $(SRCDIR) -type f -name *.$(CPPEXT))
-objects			:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(subst $(CPPEXT),$(OBJEXT),$(sources)))
+sources			:= $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+objects			:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(subst $(SRCEXT),$(OBJEXT),$(sources)))
 dependencies 	:= $(subst .$(OBJEXT),.$(DEPEXT),$(objects))
 
 # Defauilt Make
@@ -72,7 +70,7 @@ $(TARGETDIR)/$(TARGET): $(objects)
 
 # generate objects by compiling sources
 # save dependencies of source as .d
-$(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(CPPEXT)
+$(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
 
