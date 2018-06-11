@@ -1,4 +1,4 @@
-HOST_COMPILER		:= g++
+CXX					:= g++
 BUILD_TYPE			:= Release
 
 TARGET				:= main

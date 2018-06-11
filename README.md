@@ -15,7 +15,6 @@ You can build and execute following command.
 
 ```shell
 $ git clone https://github.com/daichi-ishida/Visual-Simulation-of-Smoke.git
-$ make
 $ make run
 ```
 
