@@ -1,27 +1,33 @@
-CXX := g++
-BUILD_TYPE := Release
-OUTPUT_DIR := output
+HOST_COMPILER		:= g++
+CUDA_PATH			:= /usr/local/cuda-9.1
+BUILD_TYPE			:= Release
 
-CXX_DEBUG_FLAGS := -g -O0 -Wall
-CXX_RELEASE_FLAGS := -s -O2 
+TARGET				:= main
 
-CXXFLAGS := -MMD -MP -std=gnu++14 -fopenmp 
-BINDIR := bin
-SRCDIR := src
-OBJDIR := obj
-INCLUDE := -I./include
+SRCDIR				:= src
+BUILDDIR			:= obj
+TARGETDIR			:= bin
+OUTPUTDIR			:= output
 
-DEBUG := gdb
+# extensions
+CPPEXT				:= cpp
+CUDAEXT				:= cu
+DEPEXT				:= d
+OBJEXT				:= o
 
-SRCS := $(wildcard $(SRCDIR)/*.cpp)
-OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS:.cpp=.o)))
-DEPS := $(OBJS:.o=.d)
+# flags
+CXXFLAGS			:= -MMD -MP -std=c++14 -fopenmp
+CXX_DEBUG_FLAGS		:= -Wall -g -G -O0
+CXX_RELEASE_FLAGS	:= -s -O2
+LDFLAGS				:=
+INCLUDE				:= -I./include -I/usr/local/include/eigen3 
+LIBS				:= -lGL -lGLEW -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
+LIBS				+= -lopencv_core -lopencv_videoio -lopencv_highgui
 
-INCLUDE	+= -I/usr/local/include/eigen3 
-LIBS := -lGL -lGLEW -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
-LIBS += -lopencv_core -lopencv_videoio -lopencv_highgui
-EXECUTABLE	:= main
-RM := rm -f
+
+#---------------------------------------------------------------------------------
+# DO NOT EDIT BELOW THIS LINE
+#---------------------------------------------------------------------------------
 
 ifeq ($(BUILD_TYPE),Release)
 	CXXFLAGS += $(CXX_RELEASE_FLAGS)
@@ -31,30 +37,44 @@ else
 	$(error buildtype must be release, debug, profile or coverage)
 endif
 
-.PHONY : all
-all: $(BINDIR)/$(EXECUTABLE)
+sources			:= $(shell find $(SRCDIR) -type f -name *.$(CPPEXT))
+objects			:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(subst $(CPPEXT),$(OBJEXT),$(sources)))
+dependencies 	:= $(subst .$(OBJEXT),.$(DEPEXT),$(objects))
 
-$(BINDIR)/$(EXECUTABLE): $(OBJS) $(LIBS)
-	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
-	@if [ ! -e $(OUTPUT_DIR) ]; then mkdir -p $(OUTPUT_DIR); fi	
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $^ -o $@ $(LIBS)
+# Defauilt Make
+all: directories $(TARGETDIR)/$(TARGET)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
+run: all
+	$(TARGETDIR)/$(TARGET)
+
+# Remake
+remake: cleaner all
+
+# make directory
+directories:
+	@mkdir -p $(TARGETDIR)
+	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(OUTPUTDIR)
+
+# remove directory for intermediate products
+clean:
+	@$(RM) -rf $(BUILDDIR)
+
+# remove directories for both intermediate and final products
+cleaner: clean
+	@$(RM) -rf $(TARGETDIR)
+
+-include $(dependencies)
+
+# generate binary by linking objects
+$(TARGETDIR)/$(TARGET): $(objects)
+	$(CXX) $(CXXFLAGS) -o $(TARGETDIR)/$(TARGET) $^ $(LIBS)
+
+# generate objects by compiling sources
+# save dependencies of source as .d
+$(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(CPPEXT)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
 
-.PHONY : debug
-debug :
-	@if [ ! -e $(OUTPUT_DIR) ]; then mkdir -p $(OUTPUT_DIR); fi
-	$(DEBUG) $(BINDIR)/$(EXECUTABLE)
-
-.PHONY : run
-run:
-	@if [ ! -e $(OUTPUT_DIR) ]; then mkdir -p $(OUTPUT_DIR); fi
-	$(BINDIR)/$(EXECUTABLE)
-
-.PHONY : clean
-clean:
-	$(RM) $(BINDIR)/$(EXECUTABLE) $(OBJS) $(DEPS)
-
--include $(DEPS)
+# Non-File Targets
+.PHONY: all run remake clean cleaner
