@@ -39,7 +39,7 @@ constexpr double ALPHA = 9.8;
 constexpr double BETA = 15.0;
 constexpr double T_AMP = 5.0;
 constexpr double T_AMBIENT = 50.0;
-constexpr double EMIT_DURATION = 1.0;
+constexpr double EMIT_DURATION = 2.0;
 constexpr double FINISH_TIME = 6.0;
 
 /* Scene Constants */

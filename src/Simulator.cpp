@@ -9,15 +9,15 @@ Simulator::Simulator(MACGrid *grids, double &time) : m_grids(grids), m_time(time
     ICCG.setTolerance(1e-6);
 
     /*set temperature */
-    // std::random_device rnd;
-    // std::mt19937 engine(rnd());
-    // std::uniform_real_distribution<double> dist(0, T_AMP);
+    std::random_device rnd;
+    std::mt19937 engine(rnd());
+    std::uniform_real_distribution<double> dist(0, T_AMP);
 
     OPENMP_FOR_COLLAPSE
     FOR_EACH_CELL
     {
-        m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
-        // m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
+        // m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
+        m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
     }
 
     addSource();
@@ -33,9 +33,9 @@ void Simulator::update()
     resetForce();
     calVorticity();
     addForce();
-    advectVelocity();
     calPressure();
     applyPressureTerm();
+    advectVelocity();
     advectScalar();
     if (m_time < EMIT_DURATION)
     {
