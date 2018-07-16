@@ -33,7 +33,7 @@ constexpr int SOURCE_Y_MERGIN = 4 * RESOLUTION;
 constexpr double DT = 0.02;
 constexpr double VOXEL_SIZE = 1.0;
 constexpr double INIT_DENSITY = 1.0;
-constexpr double INIT_VELOCITY = 80.0 * (double)RESOLUTION;
+constexpr double INIT_VELOCITY = 60.0 * (double)RESOLUTION;
 constexpr double VORT_EPS = 0.25;
 constexpr double ALPHA = 9.8;
 constexpr double BETA = 15.0;
@@ -43,8 +43,8 @@ constexpr double EMIT_DURATION = 2.0;
 constexpr double FINISH_TIME = 6.0;
 
 /* Scene Constants */
-constexpr int WIN_WIDTH = 500;
-constexpr int WIN_HEIGHT = 500;
+constexpr int WIN_WIDTH = 800;
+constexpr int WIN_HEIGHT = 800;
 constexpr float MAGNIFICATION = 0.2f;
 static const char *WIN_TITLE = "Visual Simulation of Smoke";
 constexpr float ABSORPTION = 2.0f;

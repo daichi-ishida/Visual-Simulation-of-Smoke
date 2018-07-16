@@ -20,6 +20,11 @@ $ make run
 
 When you run this program, simulation result is written to the "output" directory as AVI video format.
 
+To get higher resolution, modify RESOLUTION in include/constants.hpp. Instead, the calculation gets much slower.
+(most of the time is spent on solving poisson equation)
+
+Screenshot: RESOLUTION = 3
+
 ## Screenshot
 
 ![Screenshot](output/Screenshot.png)

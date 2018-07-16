@@ -9,15 +9,15 @@ Simulator::Simulator(std::shared_ptr<MACGrid> grids, double &time) : m_grids(gri
     ICCG.setTolerance(1e-8);
 
     /*set temperature */
-    // std::random_device rnd;
-    // std::mt19937 engine(rnd());
-    // std::uniform_real_distribution<double> dist(0, T_AMP);
+    std::random_device rnd;
+    std::mt19937 engine(rnd());
+    std::uniform_real_distribution<double> dist(0, T_AMP);
 
     OPENMP_FOR_COLLAPSE
     FOR_EACH_CELL
     {
-        m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
-        // m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
+        // m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
+        m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
     }
 
     addSource();
