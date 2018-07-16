@@ -24,10 +24,9 @@ private:
   void resetForce();
   void calVorticity();
   void addForce();
-  void advectVelocity();
   void calPressure();
   void applyPressureTerm();
-
+  void advectVelocity();
   void advectScalar();
 
   std::shared_ptr<MACGrid> m_grids;
