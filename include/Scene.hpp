@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <memory>
 
 #define GLFW_INCLUDE_GLU
 #include <GL/glew.h>
@@ -18,7 +19,7 @@
 class Scene
 {
 public:
-  Scene(MACGrid *grids);
+  Scene(std::shared_ptr<MACGrid> grids);
   ~Scene();
 
   void initialize();
@@ -35,11 +36,11 @@ private:
   glm::vec3 lightPos;
   glm::vec3 lightIntensity;
 
-  MACGrid *m_grids;
-  Camera *m_camera;
-  Volume *m_volume;
-  Wireframe *m_wireframe;
+  std::shared_ptr<MACGrid> m_grids;
+  std::unique_ptr<Camera> m_camera;
+  std::unique_ptr<Volume> m_volume;
+  std::unique_ptr<Wireframe> m_wireframe;
 
-  cv::VideoWriter *m_writer;
+  std::unique_ptr<cv::VideoWriter> m_writer;
   std::string file_name;
 };

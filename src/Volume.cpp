@@ -4,7 +4,7 @@
 #include "Volume.hpp"
 #include "constants.hpp"
 
-Volume::Volume(MACGrid *grids) : m_grids(grids)
+Volume::Volume(std::shared_ptr<MACGrid> grids) : m_grids(grids)
 {
     initialize();
 }
@@ -212,7 +212,7 @@ void Volume::initShaders()
     }
     else
     {
-        printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", vertex_shader_file);
+        printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", vertex_shader_file.c_str());
         getchar();
         return;
     }
@@ -227,12 +227,18 @@ void Volume::initShaders()
         fragmentShaderCode = sstr.str();
         fragmentShaderStream.close();
     }
+    else
+    {
+        printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", fragment_shader_file.c_str());
+        getchar();
+        return;
+    }
 
     GLint Result = GL_FALSE;
     int InfoLogLength;
 
     // Compile Vertex Shader
-    printf("Compiling shader : %s\n", vertex_shader_file);
+    printf("Compiling shader : %s\n", vertex_shader_file.c_str());
     char const *vertexSourcePointer = vertexShaderCode.c_str();
     glShaderSource(vertexShaderID, 1, &vertexSourcePointer, NULL);
     glCompileShader(vertexShaderID);
@@ -248,7 +254,7 @@ void Volume::initShaders()
     }
 
     // Compile Fragment Shader
-    printf("Compiling shader : %s\n", fragment_shader_file);
+    printf("Compiling shader : %s\n", fragment_shader_file.c_str());
     char const *fragmentSourcePointer = fragmentShaderCode.c_str();
     glShaderSource(fragmentShaderID, 1, &fragmentSourcePointer, NULL);
     glCompileShader(fragmentShaderID);

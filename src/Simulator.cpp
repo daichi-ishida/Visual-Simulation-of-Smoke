@@ -2,22 +2,22 @@
 #include <random>
 #include "Simulator.hpp"
 
-Simulator::Simulator(MACGrid *grids, double &time) : m_grids(grids), m_time(time), A(SIZE, SIZE), b(SIZE), x(SIZE)
+Simulator::Simulator(std::shared_ptr<MACGrid> grids, double &time) : m_grids(grids), m_time(time), A(SIZE, SIZE), b(SIZE), x(SIZE)
 {
     // nnz size is estimated by 7*SIZE because there are 7 nnz elements in a row.(center and neighbor 6)
     tripletList.reserve(7 * SIZE);
-    ICCG.setTolerance(1e-6);
+    ICCG.setTolerance(1e-8);
 
     /*set temperature */
-    std::random_device rnd;
-    std::mt19937 engine(rnd());
-    std::uniform_real_distribution<double> dist(0, T_AMP);
+    // std::random_device rnd;
+    // std::mt19937 engine(rnd());
+    // std::uniform_real_distribution<double> dist(0, T_AMP);
 
     OPENMP_FOR_COLLAPSE
     FOR_EACH_CELL
     {
-        // m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
-        m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
+        m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + T_AMBIENT;
+        // m_grids->temperature(i, j, k) = (j / (float)Ny) * T_AMP + dist(engine) + T_AMBIENT;
     }
 
     addSource();
@@ -224,6 +224,109 @@ void Simulator::addForce()
             m_grids->w(i, j, k + 1) += DT * (m_grids->fz[POS(i, j, k)] + m_grids->fz[POS(i, j, k + 1)]) * 0.5;
         }
     }
+}
+
+void Simulator::calPressure()
+{
+    tripletList.clear();
+    A.setZero();
+    b.setZero();
+    x.setZero();
+
+    double coeff = VOXEL_SIZE / DT;
+
+#pragma omp parallel for collapse(3) ordered
+    FOR_EACH_CELL
+    {
+        double F[6] = {static_cast<double>(k > 0), static_cast<double>(j > 0), static_cast<double>(i > 0),
+                       static_cast<double>(i < Nx - 1), static_cast<double>(j < Ny - 1), static_cast<double>(k < Nz - 1)};
+        double D[6] = {-1.0, -1.0, -1.0, 1.0, 1.0, 1.0};
+        double U[6];
+        U[0] = m_grids->w(i, j, k);
+        U[1] = m_grids->v(i, j, k);
+        U[2] = m_grids->u(i, j, k);
+        U[3] = m_grids->u(i + 1, j, k);
+        U[4] = m_grids->v(i, j + 1, k);
+        U[5] = m_grids->w(i, j, k + 1);
+        double sum_F = 0.0;
+
+        for (int n = 0; n < 6; ++n)
+        {
+            sum_F += F[n];
+            b(POS(i, j, k)) += D[n] * F[n] * U[n];
+        }
+        b(POS(i, j, k)) *= coeff;
+
+#pragma omp ordered
+        {
+            if (k > 0)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i, j, k - 1), F[0]));
+            }
+            if (j > 0)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i, j - 1, k), F[1]));
+            }
+            if (i > 0)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i - 1, j, k), F[2]));
+            }
+
+            tripletList.push_back(T(POS(i, j, k), POS(i, j, k), -sum_F));
+
+            if (i < Nx - 1)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i + 1, j, k), F[3]));
+            }
+            if (j < Ny - 1)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i, j + 1, k), F[4]));
+            }
+            if (k < Nz - 1)
+            {
+                tripletList.push_back(T(POS(i, j, k), POS(i, j, k + 1), F[5]));
+            }
+        }
+    }
+
+    A.setFromTriplets(tripletList.begin(), tripletList.end());
+
+    /* solve sparse lenear system by ICCG */
+    ICCG.compute(A);
+    if (ICCG.info() == Eigen::Success)
+    {
+        printf("SUCCESS: Convergence\n");
+    }
+    else
+    {
+        fprintf(stderr, "FAILED: No Convergence\n");
+    }
+    x = ICCG.solve(b);
+    printf("#iterations:     %d \n", static_cast<int>(ICCG.iterations()));
+    printf("estimated error: %e \n", ICCG.error());
+
+    Eigen::Map<Eigen::VectorXd>(m_grids->pressure.begin(), SIZE) = x;
+}
+
+void Simulator::applyPressureTerm()
+{
+    OPENMP_FOR_COLLAPSE
+    FOR_EACH_CELL
+    {
+        // compute gradient of pressure
+        if (i < Nx - 1)
+        {
+            m_grids->u(i + 1, j, k) -= DT * (m_grids->pressure(i + 1, j, k) - m_grids->pressure(i, j, k)) / VOXEL_SIZE;
+        }
+        if (j < Ny - 1)
+        {
+            m_grids->v(i, j + 1, k) -= DT * (m_grids->pressure(i, j + 1, k) - m_grids->pressure(i, j, k)) / VOXEL_SIZE;
+        }
+        if (k < Nz - 1)
+        {
+            m_grids->w(i, j, k + 1) -= DT * (m_grids->pressure(i, j, k + 1) - m_grids->pressure(i, j, k)) / VOXEL_SIZE;
+        }
+    }
     std::copy(m_grids->u.begin(), m_grids->u.end(), m_grids->u0.begin());
     std::copy(m_grids->v.begin(), m_grids->v.end(), m_grids->v0.begin());
     std::copy(m_grids->w.begin(), m_grids->w.end(), m_grids->w0.begin());
@@ -315,111 +418,6 @@ void Simulator::advectVelocity()
         break;
     }
     }
-}
-
-void Simulator::calPressure()
-{
-    tripletList.clear();
-    A.setZero();
-    b.setZero();
-    x.setZero();
-
-    double coeff = VOXEL_SIZE / DT;
-
-#pragma omp parallel for collapse(3) ordered
-    FOR_EACH_CELL
-    {
-        double F[6] = {k > 0, j > 0, i > 0, i < Nx - 1, j < Ny - 1, k < Nz - 1};
-        double D[6] = {-1.0, -1.0, -1.0, 1.0, 1.0, 1.0};
-        double U[6];
-        U[0] = m_grids->w(i, j, k);
-        U[1] = m_grids->v(i, j, k);
-        U[2] = m_grids->u(i, j, k);
-        U[3] = m_grids->u(i + 1, j, k);
-        U[4] = m_grids->v(i, j + 1, k);
-        U[5] = m_grids->w(i, j, k + 1);
-        double sum_F = 0.0;
-
-        for (int n = 0; n < 6; ++n)
-        {
-            sum_F += F[n];
-            b(POS(i, j, k)) += D[n] * F[n] * U[n];
-        }
-        b(POS(i, j, k)) *= coeff;
-
-#pragma omp ordered
-        {
-            if (k > 0)
-            {
-                tripletList.push_back(T(POS(i, j, k), POS(i, j, k - 1), F[0]));
-            }
-            if (j > 0)
-            {
-                tripletList.push_back(T(POS(i, j, k), POS(i, j - 1, k), F[1]));
-            }
-            if (i > 0)
-            {
-                tripletList.push_back(T(POS(i, j, k), POS(i - 1, j, k), F[2]));
-            }
-
-            tripletList.push_back(T(POS(i, j, k), POS(i, j, k), -sum_F));
-
-            if (i < Nx - 1)
-            {
-                tripletList.push_back(T(POS(i, j, k), POS(i + 1, j, k), F[3]));
-            }
-            if (j < Ny - 1)
-            {
-                tripletList.push_back(T(POS(i, j, k), POS(i, j + 1, k), F[4]));
-            }
-            if (k < Nz - 1)
-            {
-                tripletList.push_back(T(POS(i, j, k), POS(i, j, k + 1), F[5]));
-            }
-        }
-    }
-
-    A.setFromTriplets(tripletList.begin(), tripletList.end());
-
-    /* solve sparse lenear system by ICCG */
-    ICCG.compute(A);
-    if (ICCG.info() == Eigen::Success)
-    {
-        printf("SUCCESS: Convergence\n");
-    }
-    else
-    {
-        fprintf(stderr, "FAILED: No Convergence\n");
-    }
-    x = ICCG.solve(b);
-    printf("#iterations:     %d \n", ICCG.iterations());
-    printf("estimated error: %e \n", ICCG.error());
-
-    Eigen::Map<Eigen::VectorXd>(m_grids->pressure.begin(), SIZE) = x;
-}
-
-void Simulator::applyPressureTerm()
-{
-    OPENMP_FOR_COLLAPSE
-    FOR_EACH_CELL
-    {
-        // compute gradient of pressure
-        if (i < Nx - 1)
-        {
-            m_grids->u(i + 1, j, k) -= DT * (m_grids->pressure(i + 1, j, k) - m_grids->pressure(i, j, k)) / VOXEL_SIZE;
-        }
-        if (j < Ny - 1)
-        {
-            m_grids->v(i, j + 1, k) -= DT * (m_grids->pressure(i, j + 1, k) - m_grids->pressure(i, j, k)) / VOXEL_SIZE;
-        }
-        if (k < Nz - 1)
-        {
-            m_grids->w(i, j, k + 1) -= DT * (m_grids->pressure(i, j, k + 1) - m_grids->pressure(i, j, k)) / VOXEL_SIZE;
-        }
-    }
-    std::copy(m_grids->u.begin(), m_grids->u.end(), m_grids->u0.begin());
-    std::copy(m_grids->v.begin(), m_grids->v.end(), m_grids->v0.begin());
-    std::copy(m_grids->w.begin(), m_grids->w.end(), m_grids->w0.begin());
 }
 
 void Simulator::advectScalar()

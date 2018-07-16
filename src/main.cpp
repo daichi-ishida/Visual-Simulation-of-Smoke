@@ -1,3 +1,4 @@
+#include <memory>
 #define GLFW_INCLUDE_GLU
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -42,16 +43,15 @@ int main()
 
     double time = 0.0;
     int step = 1;
-    MACGrid *grids = new MACGrid();
-    Simulator *simulator = new Simulator(grids, time);
-    Scene *scene = new Scene(grids);
+    std::shared_ptr<MACGrid> grids = std::make_shared<MACGrid>();
+    std::unique_ptr<Simulator> simulator = std::make_unique<Simulator>(grids, time);
+    std::unique_ptr<Scene> scene = std::make_unique<Scene>(grids);
 
     printf("\n*** START SIMULATION ***\n");
 
     // scene->writeData();
 
     while (glfwWindowShouldClose(window) == GL_FALSE && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
-    // while (1)
     {
         printf("\n=== STEP %d ===\n", step);
         time += DT;
@@ -71,19 +71,6 @@ int main()
     }
 
     printf("\n*** END ***\n");
-
-    if (simulator)
-    {
-        delete simulator;
-    }
-    if (scene)
-    {
-        delete scene;
-    }
-    if (grids)
-    {
-        delete grids;
-    }
 
     return 0;
 }

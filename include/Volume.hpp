@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <memory>
 
 #define GLFW_INCLUDE_GLU
 #include <GL/glew.h>
@@ -14,7 +15,7 @@
 class Volume
 {
 public:
-  Volume(MACGrid *grids);
+  Volume(std::shared_ptr<MACGrid> grids);
   ~Volume();
 
   void initialize();
@@ -35,7 +36,7 @@ private:
 
   std::string ReadFile(const std::string &filename);
 
-  MACGrid *m_grids;
+  std::shared_ptr<MACGrid> m_grids;
 
   // ID
   GLuint vaoID;

@@ -6,7 +6,7 @@
 #include "Scene.hpp"
 #include "constants.hpp"
 
-Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
+Scene::Scene(std::shared_ptr<MACGrid> grids) : m_file_num(0), m_grids(grids)
 {
     initialize();
 
@@ -32,7 +32,7 @@ Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
             break;
         }
         file_name += ".avi";
-        m_writer = new cv::VideoWriter(file_name, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(WIN_WIDTH, WIN_HEIGHT));
+        m_writer = std::make_unique<cv::VideoWriter>(file_name, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(WIN_WIDTH, WIN_HEIGHT));
         if (!m_writer->isOpened())
         {
             fprintf(stderr, "ERROR : file open error at writing data in .avi format\n %s cannot open\n", file_name.c_str());
@@ -43,29 +43,13 @@ Scene::Scene(MACGrid *grids) : m_file_num(0), m_grids(grids)
 
 Scene::~Scene()
 {
-    if (m_writer)
-    {
-        delete m_writer;
-    }
-    if (m_wireframe)
-    {
-        delete m_wireframe;
-    }
-    if (m_volume)
-    {
-        delete m_volume;
-    }
-    if (m_camera)
-    {
-        delete m_camera;
-    }
 }
 
 void Scene::initialize()
 {
-    m_camera = new Camera();
-    m_volume = new Volume(m_grids);
-    m_wireframe = new Wireframe();
+    m_camera = std::make_unique<Camera>();
+    m_volume = std::make_unique<Volume>(m_grids);
+    m_wireframe = std::make_unique<Wireframe>();
 }
 
 void Scene::update()
