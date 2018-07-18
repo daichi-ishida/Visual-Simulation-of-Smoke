@@ -1,5 +1,6 @@
 #version 330 core
 
+in vec3 vertPos;
 in vec3 texCoords;
 
 uniform sampler3D densityTex;
@@ -23,7 +24,7 @@ void main()
  
     // assume all coordinates are in texture space
     vec3 pos = texCoords.xyz;
-    vec3 eyeDir = normalize(pos-eyePos)*scale;
+    vec3 eyeDir = normalize(vertPos-eyePos)*scale;
  
     // transmittance
     float T = 1.0;
@@ -44,7 +45,7 @@ void main()
                 break;
             }
             // point light dir in texture space
-            vec3 lightDir = normalize(lightPos-pos)*lscale;
+            vec3 lightDir = normalize(lightPos-vertPos)*lscale;
  
             // sample light
             float Tl = 1.0; // transmittance along light ray

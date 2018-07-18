@@ -37,7 +37,6 @@ int main()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glLineWidth(1.2f);
 
-    glEnable(GL_TEXTURE_3D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
 
