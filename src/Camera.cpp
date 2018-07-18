@@ -8,7 +8,7 @@ Camera::Camera() : m_r(9.0f),
                    m_horizontalAngle(1.0f * M_PI / 8.0f),
                    m_verticalAngle(M_PI / 2.0f),
                    m_FoV(30.0f),
-                   m_speed(10.0f),
+                   m_speed(1.0f),
                    m_mouseSpeed(0.0003f)
 {
     // update();

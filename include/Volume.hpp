@@ -39,12 +39,10 @@ private:
   std::shared_ptr<MACGrid> m_grids;
 
   // ID
+  GLuint programID;
   GLuint vaoID;
   GLuint vboID;
   GLuint indexID;
-  GLuint programID;
-  GLuint vertexShaderID;
-  GLuint fragmentShaderID;
 
   GLuint volumeTexID;
 
@@ -52,7 +50,7 @@ private:
   GLuint LightPosID;
   GLuint LightIntensityID;
   GLuint MatrixID;
-  GLuint scaleID;
   GLuint absorptionID;
+  GLuint numID;
   GLuint ratioID;
 };

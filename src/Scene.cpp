@@ -56,8 +56,8 @@ void Scene::update()
 {
     float r = 7.0f;
 
-    lightPos = glm::vec3(0.0f, -r, 0.0f);
-    lightIntensity = 1.0f * glm::vec3(1.74f, 1.46f, 1.00f);
+    lightPos = glm::vec3(r, -1.5f * r, -r);
+    lightIntensity = 3.0f * glm::vec3(1.74f, 1.46f, 1.00f);
     // lightIntensity = glm::vec3(1.0f);
 
     m_camera->update();

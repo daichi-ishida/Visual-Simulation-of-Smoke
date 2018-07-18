@@ -32,12 +32,10 @@ private:
   std::string ReadFile(const std::string &filename);
 
   // ID
+  GLuint programID;
   GLuint vaoID;
   GLuint vboID;
   GLuint indexID;
-  GLuint programID;
-  GLuint vertexShaderID;
-  GLuint fragmentShaderID;
 
   GLuint MatrixID;
 };

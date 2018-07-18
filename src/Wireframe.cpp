@@ -109,6 +109,9 @@ void Wireframe::initShaders()
     std::string vertex_shader_file = std::string("./src/shader/wireframe.vert");
     std::string fragment_shader_file = std::string("./src/shader/wireframe.frag");
 
+    GLuint vertexShaderID;
+    GLuint fragmentShaderID;
+
     // create shaders
     vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
     fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);

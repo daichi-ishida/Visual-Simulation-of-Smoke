@@ -64,8 +64,8 @@ void Volume::update()
 
 void Volume::draw() const
 {
-    glUniform1f(scaleID, VOXEL_SIZE);
     glUniform1f(absorptionID, ABSORPTION);
+    glUniform1f(numID, 2 * N);
     glUniform3f(ratioID, (float)ratio[0], (float)ratio[1], (float)ratio[2]);
 
     // Bind volume texture in Texture Unit 0
@@ -131,6 +131,16 @@ void Volume::initVAO()
         {1.0f, 0.0f, 1.0f},
         {1.0f, 1.0f, 1.0f}};
 
+    const float texcoord[8][3] = {
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f},
+        {1.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 1.0f},
+        {1.0f, 0.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f}};
+
     const unsigned int indices[12][3] = {
         {3, 5, 7}, {3, 7, 6}, {1, 6, 7}, {1, 7, 4}, {0, 1, 4}, {0, 4, 2}, {0, 2, 5}, {0, 5, 3}, {2, 5, 7}, {2, 7, 4}, {0, 1, 6}, {0, 6, 3}};
 
@@ -166,6 +176,8 @@ void Volume::initShaders()
     std::string vertex_shader_file = std::string("./src/shader/volume.vert");
     std::string fragment_shader_file = std::string("./src/shader/volume.frag");
 
+    GLuint vertexShaderID;
+    GLuint fragmentShaderID;
     // create shaders
     vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
     fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -267,8 +279,8 @@ void Volume::initShaders()
     LightPosID = glGetUniformLocation(programID, "lightPos");
     LightIntensityID = glGetUniformLocation(programID, "lightIntensity");
     MatrixID = glGetUniformLocation(programID, "MVP");
-    scaleID = glGetUniformLocation(programID, "scale");
     absorptionID = glGetUniformLocation(programID, "absorption");
+    numID = glGetUniformLocation(programID, "num");
     ratioID = glGetUniformLocation(programID, "ratio");
 }
 
