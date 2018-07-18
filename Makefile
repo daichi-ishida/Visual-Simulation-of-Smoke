@@ -15,7 +15,7 @@ OBJEXT				:= o
 
 # flags
 CXXFLAGS			:= -MMD -MP -std=c++14 -fopenmp
-CXX_DEBUG_FLAGS		:= -Wall -g -G -O0
+CXX_DEBUG_FLAGS		:= -Wall -g -O0
 CXX_RELEASE_FLAGS	:= -s -O2
 LDFLAGS				:=
 INCLUDE				:= -I./include -I/usr/local/include/eigen3 

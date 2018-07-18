@@ -2,6 +2,7 @@
 #include <array>
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include "constants.hpp"
 #include "Vec3.hpp"
 
