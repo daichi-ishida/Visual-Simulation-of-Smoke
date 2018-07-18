@@ -72,9 +72,9 @@ void Wireframe::initVAO()
 
     for (int i = 0; i < 8; ++i)
     {
-        vertices[i][0] *= (float)Nx * MAGNIFICATION;
-        vertices[i][1] *= (float)Ny * MAGNIFICATION;
-        vertices[i][2] *= (float)Nz * MAGNIFICATION;
+        vertices[i][0] *= (float)ratio[0];
+        vertices[i][1] *= (float)ratio[1];
+        vertices[i][2] *= (float)ratio[2];
     }
 
     // generate VAO

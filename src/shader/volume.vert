@@ -1,15 +1,15 @@
 #version 330 core
 
 layout(location = 0) in vec3 vertexPosition;
-layout(location = 1) in vec3 texturePosition;
 
-out vec3 vertPos;
-out vec3 texCoords;
+out vec3 texPos;
 
 uniform mat4 MVP;
+uniform vec3 ratio;
 
 void main(void) {
-  gl_Position = MVP *  vec4(vertexPosition,1.0);
-  vertPos = vertexPosition;
-  texCoords = texturePosition;
+  vec3 vPos = 2.0 * vertexPosition - vec3(1.0);
+  vPos *= ratio;
+  gl_Position = MVP *  vec4(vPos, 1.0);
+  texPos = vertexPosition;
 }

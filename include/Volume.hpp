@@ -41,7 +41,6 @@ private:
   // ID
   GLuint vaoID;
   GLuint vboID;
-  GLuint textureID;
   GLuint indexID;
   GLuint programID;
   GLuint vertexShaderID;
@@ -53,8 +52,7 @@ private:
   GLuint LightPosID;
   GLuint LightIntensityID;
   GLuint MatrixID;
+  GLuint scaleID;
   GLuint absorptionID;
-
-  // data
-  float absorption;
+  GLuint ratioID;
 };

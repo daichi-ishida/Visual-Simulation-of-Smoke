@@ -19,21 +19,23 @@ enum E_EMITTER_POS
     E_BOTTOM = 1
 };
 
-constexpr int RESOLUTION = 1;
-constexpr int Nx = 25 * RESOLUTION, Ny = 50 * RESOLUTION, Nz = 25 * RESOLUTION;
+constexpr int N = 25;
+constexpr int ratio[3] = {1, 2, 1}; // X, Y, Z
 constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
 constexpr E_ADVECTION ADVECTION_METHOD = E_MAC_CORMACK;
 constexpr E_EMITTER_POS EMITTER_POS = E_BOTTOM;
 
-constexpr int SOURCE_SIZE_X = 7 * RESOLUTION;
-constexpr int SOURCE_SIZE_Y = 2 * RESOLUTION;
-constexpr int SOURCE_SIZE_Z = 7 * RESOLUTION;
-constexpr int SOURCE_Y_MERGIN = 4 * RESOLUTION;
+constexpr int Nx = ratio[0] * N, Ny = ratio[1] * N, Nz = ratio[2] * N;
+constexpr int SOURCE_SIZE_X = (int)(Nx / 3);
+constexpr int SOURCE_SIZE_Y = (int)(Ny / 10);
+constexpr int SOURCE_SIZE_Z = (int)(Nz / 3);
+constexpr int SOURCE_Y_MERGIN = (int)(Ny / 10);
+constexpr int SIZE = Nx * Ny * Nz;
 
 constexpr double DT = 0.02;
-constexpr double VOXEL_SIZE = 1.0;
+constexpr double VOXEL_SIZE = 1.0 / N;
 constexpr double INIT_DENSITY = 1.0;
-constexpr double INIT_VELOCITY = 60.0 * (double)RESOLUTION;
+constexpr double INIT_VELOCITY = 20.0;
 constexpr double VORT_EPS = 0.25;
 constexpr double ALPHA = 9.8;
 constexpr double BETA = 15.0;
@@ -45,14 +47,11 @@ constexpr double FINISH_TIME = 6.0;
 /* Scene Constants */
 constexpr int WIN_WIDTH = 800;
 constexpr int WIN_HEIGHT = 800;
-constexpr float MAGNIFICATION = 0.2f;
 static const char *WIN_TITLE = "Visual Simulation of Smoke";
 constexpr float ABSORPTION = 2.0f;
 constexpr bool SAVE_MOVIE = true;
 
 /* other definitions */
-constexpr int SIZE = Nx * Ny * Nz;
-
 constexpr int POS(int i, int j, int k)
 {
     assert((i >= 0 || i < Nx) || (j >= 0 || j < Ny) || (k >= 0 || k < Nz));

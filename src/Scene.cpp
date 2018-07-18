@@ -54,7 +54,7 @@ void Scene::initialize()
 
 void Scene::update()
 {
-    float r = 7.0f * Nx * MAGNIFICATION;
+    float r = 7.0f;
 
     lightPos = glm::vec3(0.0f, -r, 0.0f);
     lightIntensity = 1.0f * glm::vec3(1.74f, 1.46f, 1.00f);

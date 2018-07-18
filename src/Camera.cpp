@@ -4,7 +4,7 @@
 #include "Camera.hpp"
 #include "constants.hpp"
 
-Camera::Camera() : m_r(9.0f * Nx * MAGNIFICATION),
+Camera::Camera() : m_r(9.0f),
                    m_horizontalAngle(1.0f * M_PI / 8.0f),
                    m_verticalAngle(M_PI / 2.0f),
                    m_FoV(30.0f),
@@ -26,7 +26,7 @@ void Camera::update()
 
 void Camera::GridViewControll()
 {
-    glm::vec3 center = glm::vec3(0, 0, 0);
+    glm::vec3 center = glm::vec3(0.0f, 0.0f, 0.0f);
     m_position = glm::vec3(m_r * std::sin(m_verticalAngle) * std::sin(m_horizontalAngle),
                            -m_r * std::cos(m_verticalAngle),
                            m_r * std::sin(m_verticalAngle) * std::cos(m_horizontalAngle));
@@ -70,12 +70,12 @@ void Camera::GridViewControll()
     {
         m_verticalAngle = M_PI;
     }
-    else if (m_verticalAngle < 0)
+    else if (m_verticalAngle < 0.0f)
     {
-        m_verticalAngle = 0;
+        m_verticalAngle = 0.0f;
     }
 
-    glm::vec3 right = glm::vec3(std::cos(m_horizontalAngle), 0, -std::sin(m_horizontalAngle));
+    glm::vec3 right = glm::vec3(std::cos(m_horizontalAngle), 0.0f, -std::sin(m_horizontalAngle));
     glm::vec3 up = glm::cross(-right, -m_position);
 
     // Projection matrix : 45ｰ Field of View,  ratio, display range : 0.1 unit <-> 100 units
@@ -112,13 +112,13 @@ void Camera::FPScontroll()
     m_horizontalAngle += m_mouseSpeed * float(WIN_WIDTH / 2 - xpos);
     m_verticalAngle += m_mouseSpeed * float(WIN_HEIGHT / 2 - ypos);
     //restrict vertical angle not to be upside down
-    if (m_verticalAngle < -M_PI / 2)
+    if (m_verticalAngle < -M_PI / 2.0f)
     {
-        m_verticalAngle = -M_PI / 2;
+        m_verticalAngle = -M_PI / 2.0f;
     }
-    if (m_verticalAngle > M_PI / 2)
+    if (m_verticalAngle > M_PI / 2.0f)
     {
-        m_verticalAngle = M_PI / 2;
+        m_verticalAngle = M_PI / 2.0f;
     }
 
     // Direction : Spherical coordinates to Cartesian coordinates conversion
@@ -130,7 +130,7 @@ void Camera::FPScontroll()
     // Right vector
     glm::vec3 right = glm::vec3(
         std::sin(m_horizontalAngle - M_PI / 2.0f), //substitute m_verticalAngle = 0 in the direction vector
-        0,
+        0.0f,
         std::cos(m_horizontalAngle - M_PI / 2.0f));
 
     // Up vector

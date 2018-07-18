@@ -12,7 +12,6 @@ Volume::Volume(std::shared_ptr<MACGrid> grids) : m_grids(grids)
 Volume::~Volume()
 {
     glDeleteBuffers(1, &indexID);
-    glDeleteBuffers(1, &textureID);
     glDeleteBuffers(1, &vboID);
     glDeleteVertexArrays(1, &vaoID);
 
@@ -65,7 +64,9 @@ void Volume::update()
 
 void Volume::draw() const
 {
-    glUniform1f(absorptionID, absorption);
+    glUniform1f(scaleID, VOXEL_SIZE);
+    glUniform1f(absorptionID, ABSORPTION);
+    glUniform3f(ratioID, (float)ratio[0], (float)ratio[1], (float)ratio[2]);
 
     // Bind volume texture in Texture Unit 0
     glActiveTexture(GL_TEXTURE0);
@@ -115,24 +116,12 @@ void Volume::initialize()
 {
     initVAO();
     initShaders();
-
-    absorption = ABSORPTION;
 }
 
 void Volume::initVAO()
 {
     /* domain cube */
-    float vertices[8][3] = {
-        {-1.0f, -1.0f, -1.0f},
-        {1.0f, -1.0f, -1.0f},
-        {-1.0f, 1.0f, -1.0f},
-        {-1.0f, -1.0f, 1.0f},
-        {1.0f, 1.0f, -1.0f},
-        {-1.0f, 1.0f, 1.0f},
-        {1.0f, -1.0f, 1.0f},
-        {1.0f, 1.0f, 1.0f}};
-
-    const float texcoord[8][3] = {
+    const float vertices[8][3] = {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
@@ -145,12 +134,6 @@ void Volume::initVAO()
     const unsigned int indices[12][3] = {
         {3, 5, 7}, {3, 7, 6}, {1, 6, 7}, {1, 7, 4}, {0, 1, 4}, {0, 4, 2}, {0, 2, 5}, {0, 5, 3}, {2, 5, 7}, {2, 7, 4}, {0, 1, 6}, {0, 6, 3}};
 
-    for (int i = 0; i < 8; ++i)
-    {
-        vertices[i][0] *= (float)Nx * MAGNIFICATION;
-        vertices[i][1] *= (float)Ny * MAGNIFICATION;
-        vertices[i][2] *= (float)Nz * MAGNIFICATION;
-    }
     // generate VAO
     glGenVertexArrays(1, &vaoID);
     // set current VAO
@@ -163,19 +146,6 @@ void Volume::initVAO()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(
         0,        // attribute
-        3,        // size
-        GL_FLOAT, // type
-        GL_FALSE, // normalized?
-        0,        // stride
-        (void *)0 // array buffer offset
-    );
-
-    glGenBuffers(1, &textureID);
-    glBindBuffer(GL_ARRAY_BUFFER, textureID);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoord), texcoord, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(
-        1,        // attribute
         3,        // size
         GL_FLOAT, // type
         GL_FALSE, // normalized?
@@ -297,7 +267,9 @@ void Volume::initShaders()
     LightPosID = glGetUniformLocation(programID, "lightPos");
     LightIntensityID = glGetUniformLocation(programID, "lightIntensity");
     MatrixID = glGetUniformLocation(programID, "MVP");
+    scaleID = glGetUniformLocation(programID, "scale");
     absorptionID = glGetUniformLocation(programID, "absorption");
+    ratioID = glGetUniformLocation(programID, "ratio");
 }
 
 std::string Volume::ReadFile(const std::string &filename)
