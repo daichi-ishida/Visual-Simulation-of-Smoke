@@ -1,4 +1,5 @@
 #include <memory>
+#include <sys/time.h>
 #define GLFW_INCLUDE_GLU
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -14,6 +15,10 @@ int main()
     if (glfwInit() == GLFW_FALSE)
     {
         fprintf(stderr, "Initialization failed!\n");
+    }
+    if (OFFSCREEN_MODE)
+    {
+        glfwWindowHint(GLFW_VISIBLE, 0);
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -46,7 +51,8 @@ int main()
     std::unique_ptr<Simulator> simulator = std::make_unique<Simulator>(grids, time);
     std::unique_ptr<Scene> scene = std::make_unique<Scene>(grids);
 
-    printf("\n*** START SIMULATION ***\n");
+    printf("\n*** SIMULATION START ***\n");
+    struct timeval s, e;
 
     // scene->writeData();
 
@@ -54,11 +60,16 @@ int main()
     {
         printf("\n=== STEP %d ===\n", step);
         time += DT;
+        gettimeofday(&s, NULL);
+
         simulator->update();
 
         scene->update();
         // scene->writeData();
         scene->render();
+        gettimeofday(&e, NULL);
+        printf("time = %lf\n", (e.tv_sec - s.tv_sec) + (e.tv_usec - s.tv_usec) * 1.0E-6);
+
         ++step;
 
         if (time >= FINISH_TIME)
@@ -69,7 +80,8 @@ int main()
         glfwPollEvents();
     }
 
-    printf("\n*** END ***\n");
+    printf("\n*** SIMULATION END ***\n");
+    glfwTerminate();
 
     return 0;
 }
