@@ -47,7 +47,7 @@ void main()
                 break;
             }
             // point light dir in texture space
-            vec3 lightDir = normalize(lightPos-vertPos)*lscale;
+            vec3 lightDir = normalize(lightPos-pos)*lscale;
  
             // sample light
             float Tl = 1.0; // transmittance along light ray
