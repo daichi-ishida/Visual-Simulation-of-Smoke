@@ -24,6 +24,7 @@ constexpr int ratio[3] = {1, 2, 1}; // X, Y, Z
 constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
 constexpr E_ADVECTION ADVECTION_METHOD = E_MAC_CORMACK;
 constexpr E_EMITTER_POS EMITTER_POS = E_BOTTOM;
+constexpr bool OFFSCREEN_MODE = false;
 
 constexpr int Nx = ratio[0] * N, Ny = ratio[1] * N, Nz = ratio[2] * N;
 constexpr int SOURCE_SIZE_X = (int)(Nx / 4);
