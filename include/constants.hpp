@@ -19,7 +19,7 @@ enum E_EMITTER_POS
     E_BOTTOM = 1
 };
 
-constexpr int N = 64;
+constexpr int N = 32;
 constexpr int ratio[3] = {1, 2, 1}; // X, Y, Z
 constexpr E_METHOD INTERPOLATION_METHOD = E_MONOTONIC_CUBIC;
 constexpr E_ADVECTION ADVECTION_METHOD = E_MAC_CORMACK;

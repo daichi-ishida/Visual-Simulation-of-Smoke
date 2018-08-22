@@ -26,6 +26,7 @@ void main()
  
     // assume all coordinates are in texture space
     vec3 pos = texPos.xyz;
+    vec3 wpos = vertPos.xyz;
     vec3 eyeDir = normalize(vertPos-eyePos)*scale;
  
     // transmittance
@@ -47,7 +48,7 @@ void main()
                 break;
             }
             // point light dir in texture space
-            vec3 lightDir = normalize(lightPos-vertPos)*lscale;
+            vec3 lightDir = normalize(lightPos-wpos)*lscale;
  
             // sample light
             float Tl = 1.0; // transmittance along light ray
@@ -70,6 +71,7 @@ void main()
         }
  
         pos += eyeDir;
+        wpos += eyeDir;
     }
  
     color.xyz = Lo;
